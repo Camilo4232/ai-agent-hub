@@ -4,7 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Agent Hub - Web3 Integration</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <!-- Try local ethers.js first, fallback to CDN -->
+    <script src="ethers-5.7.2.min.js" onerror="loadEthersFromCDN()"></script>
+    <script>
+        // Fallback to CDN if local file fails
+        function loadEthersFromCDN() {
+            console.log('Local ethers.js failed, loading from CDN...');
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js';
+            script.onerror = function() {
+                console.error('CDN también falló. Intenta descargar ethers.js manualmente.');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <style>
         * {
             margin: 0;
@@ -334,42 +347,72 @@
         ];
 
         async function connectWallet() {
+            console.log('Intentando conectar wallet...');
+            console.log('MetaMask detectado:', typeof window.ethereum !== 'undefined');
+
             if (typeof window.ethereum !== 'undefined') {
                 try {
-                    provider = new ethers.BrowserProvider(window.ethereum);
-                    await provider.send("eth_requestAccounts", []);
-                    signer = await provider.getSigner();
+                    console.log('Solicitando cuentas...');
+                    // Request account access
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    console.log('Cuentas recibidas:', accounts);
+
+                    // Create provider and signer
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    console.log('Provider creado:', provider);
+
+                    signer = provider.getSigner();
                     userAddress = await signer.getAddress();
+                    console.log('Dirección del usuario:', userAddress);
 
                     document.getElementById('walletAddress').textContent = userAddress;
                     document.getElementById('connectBtn').textContent = '✓ Conectado';
                     document.getElementById('connectBtn').classList.add('success');
+                    document.getElementById('connectBtn').disabled = false;
 
+                    console.log('Actualizando balance USDC...');
                     await updateUSDCBalance();
+
+                    console.log('Verificando ganancias...');
                     await checkEarnings();
+
+                    console.log('Conexión completada exitosamente!');
                 } catch (error) {
+                    console.error('Error completo:', error);
                     alert('Error conectando wallet: ' + error.message);
                 }
             } else {
-                alert('Por favor instala MetaMask!');
+                console.error('MetaMask no detectado');
+                alert('Por favor instala MetaMask!\n\nDescárgalo desde: https://metamask.io');
             }
         }
 
         async function updateUSDCBalance() {
             try {
+                console.log('Obteniendo balance USDC...');
                 const response = await fetch(`${API_URL}/health`);
                 const data = await response.json();
+                console.log('Datos del servidor:', data);
 
                 if (data.contracts && data.contracts.usdc) {
+                    console.log('Dirección USDC:', data.contracts.usdc);
                     const usdcContract = new ethers.Contract(data.contracts.usdc, USDC_ABI, provider);
                     const balance = await usdcContract.balanceOf(userAddress);
                     const decimals = await usdcContract.decimals();
-                    const formatted = ethers.formatUnits(balance, decimals);
+                    console.log('Balance raw:', balance.toString(), 'Decimals:', decimals);
+
+                    // ethers v5 syntax
+                    const formatted = ethers.utils.formatUnits(balance, decimals);
+                    console.log('Balance formateado:', formatted);
 
                     document.getElementById('usdcBalance').textContent = parseFloat(formatted).toFixed(3) + ' USDC';
+                } else {
+                    console.log('No hay contratos de blockchain configurados - modo demo');
+                    document.getElementById('usdcBalance').textContent = '0.00 USDC (Demo)';
                 }
             } catch (error) {
                 console.error('Error getting USDC balance:', error);
+                document.getElementById('usdcBalance').textContent = '0.00 USDC';
             }
         }
 
@@ -599,8 +642,26 @@
             statusDiv.innerHTML = message;
         }
 
-        // Auto-load agents on page load
+        // Check ethers.js is loaded and auto-load agents on page load
         window.addEventListener('load', () => {
+            console.log('Página cargada');
+            console.log('ethers disponible:', typeof ethers !== 'undefined');
+
+            if (typeof ethers !== 'undefined') {
+                console.log('ethers.js versión:', ethers.version);
+                console.log('Sistema listo para conectar MetaMask');
+            } else {
+                console.error('ERROR: ethers.js no se cargó correctamente!');
+                alert('Error: La librería ethers.js no se cargó. Por favor recarga la página.');
+            }
+
+            // Check if MetaMask is installed
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask detectado y listo');
+            } else {
+                console.warn('MetaMask no está instalado');
+            }
+
             loadAgents();
         });
     </script>
