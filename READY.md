@@ -6,7 +6,6 @@
 npm run quick-start
 ```
 
-## ✨ Lo que ya hice por ti:
 
 ### ✅ 1. Inicialización Git
 - Repositorio creado
