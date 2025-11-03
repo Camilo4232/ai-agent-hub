@@ -9,13 +9,16 @@
     "dev": "node --watch backend/server.js",
     "agent": "node agents/simple-agent.js",
     "setup": "node scripts/setup.js",
+    "auto-deploy": "node scripts/auto-deploy.js",
+    "start-all": "node scripts/start-all.js",
     "contracts:install": "cd contracts && npm install",
     "contracts:compile": "cd contracts && npx hardhat compile",
     "contracts:deploy": "cd contracts && npx hardhat run scripts/deploy-all.js --network sepolia",
     "contracts:deploy:local": "cd contracts && npx hardhat run scripts/deploy-all.js --network localhost",
     "contracts:test": "cd contracts && npx hardhat test",
     "install:all": "npm install && cd contracts && npm install && cd ..",
-    "check": "node scripts/check-config.js"
+    "check": "node scripts/check-config.js",
+    "quick-start": "npm run auto-deploy && npm start"
   },
   "keywords": [
     "ai-agents",
