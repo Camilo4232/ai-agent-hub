@@ -171,8 +171,8 @@ app.post('/query', async (req, res) => {
         console.log(`\n🔍 [${AGENT_CONFIG.name}] Query directa del usuario`);
         console.log(`   Query: ${query}`);
 
-        // Extract city
-        const cityMatch = query.toLowerCase().match(/moda|ropa|vestir.*?(new york|london|tokyo|paris|miami)/i);
+        // Extract city (search anywhere in text)
+        const cityMatch = query.toLowerCase().match(/(new york|london|tokyo|paris|miami)/i);
         const city = cityMatch ? cityMatch[1] : 'new york';
 
         // Query Weather Agent
