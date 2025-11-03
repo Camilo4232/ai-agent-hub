@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents Demo - A2A Communication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .agents-status {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .agent-status {
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            background: #f9fafb;
+        }
+
+        .agent-status.online {
+            border-left-color: #10b981;
+        }
+
+        .agent-status.offline {
+            border-left-color: #ef4444;
+        }
+
+        .agent-status h4 {
+            margin-bottom: 8px;
+        }
+
+        .agent-status .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-badge.online {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.offline {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .demo-section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .demo-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin-left: -10px;
+            margin-top: -10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f9fafb;
+            border-left: 4px solid #667eea;
+        }
+
+        .result.success {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+
+        .result.error {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+
+        .result h3 {
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .result pre {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .cost-breakdown {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .cost-breakdown h4 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .cost-item:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding-top: 10px;
+            margin-top: 5px;
+            border-top: 2px solid #667eea;
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .info-box strong {
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Agents Demo</h1>
+            <p>Prueba la comunicación A2A entre agentes inteligentes</p>
+        </div>
+
+        <!-- Agents Status -->
+        <div class="agents-status">
+            <h3>Estado de los Agentes</h3>
+            <button class="btn" onclick="checkAllAgents()" style="max-width: 200px; margin: 10px 0;">Actualizar Estado</button>
+            <div class="status-grid" id="agentsStatus">
+                <div class="agent-status">
+                    <h4>🌤️ Weather Agent</h4>
+                    <span class="status-badge">Verificando...</span>
+                </div>
+                <div class="agent-status">
+                    <h4>👔 Fashion Agent</h4>
+                    <span class="status-badge">Verificando...</span>
+                </div>
+                <div class="agent-status">
+                    <h4>🎯 Activities Agent</h4>
+                    <span class="status-badge">Verificando...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <strong>Modo Demo:</strong> Los agentes se comunican entre sí usando el protocolo A2A.
+            No se requiere blockchain ni MetaMask. Los costos mostrados son simulados.
+        </div>
+
+        <!-- Demo Section -->
+        <div class="demo-section">
+            <h2>🎯 Consulta Completa (3 Agentes)</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                El Activities Agent consultará automáticamente a Weather y Fashion Agents para darte un plan completo.
+            </p>
+
+            <div class="form-group">
+                <label>Selecciona una ciudad:</label>
+                <select id="citySelect">
+                    <option value="new york">New York</option>
+                    <option value="london">London</option>
+                    <option value="tokyo">Tokyo</option>
+                    <option value="paris">Paris</option>
+                    <option value="miami">Miami</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="queryActivitiesAgent()" id="activitiesBtn">
+                🎯 Obtener Plan Completo
+            </button>
+
+            <div id="activitiesResult"></div>
+        </div>
+
+        <!-- Individual Agents -->
+        <div class="demo-section">
+            <h2>🌤️ Weather Agent</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Consulta solo datos meteorológicos (Precio: 0.001 USDC)
+            </p>
+
+            <div class="form-group">
+                <label>Ciudad:</label>
+                <select id="weatherCity">
+                    <option value="new york">New York</option>
+                    <option value="london">London</option>
+                    <option value="tokyo">Tokyo</option>
+                    <option value="paris">Paris</option>
+                    <option value="miami">Miami</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="queryWeatherAgent()" id="weatherBtn">
+                🌤️ Consultar Clima
+            </button>
+
+            <div id="weatherResult"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>👔 Fashion Agent</h2>
+            <p style="margin-bottom: 20px; color: #666;">
+                Recomendaciones de moda basadas en el clima (Consulta a Weather Agent automáticamente)
+            </p>
+
+            <div class="form-group">
+                <label>Ciudad:</label>
+                <select id="fashionCity">
+                    <option value="new york">New York</option>
+                    <option value="london">London</option>
+                    <option value="tokyo">Tokyo</option>
+                    <option value="paris">Paris</option>
+                    <option value="miami">Miami</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="queryFashionAgent()" id="fashionBtn">
+                👔 Obtener Recomendaciones
+            </button>
+
+            <div id="fashionResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const AGENTS = {
+            weather: 'http://localhost:3001',
+            fashion: 'http://localhost:3002',
+            activities: 'http://localhost:3003'
+        };
+
+        // Check all agents status
+        async function checkAllAgents() {
+            const statusDiv = document.getElementById('agentsStatus');
+            statusDiv.innerHTML = '<p style="text-align: center; padding: 20px;">Verificando agentes...</p>';
+
+            const agents = [
+                { name: 'Weather Agent', icon: '🌤️', port: 3001, key: 'weather' },
+                { name: 'Fashion Agent', icon: '👔', port: 3002, key: 'fashion' },
+                { name: 'Activities Agent', icon: '🎯', port: 3003, key: 'activities' }
+            ];
+
+            let html = '';
+            for (const agent of agents) {
+                try {
+                    const response = await fetch(`http://localhost:${agent.port}/health`);
+                    const data = await response.json();
+
+                    if (data.status === 'healthy') {
+                        html += `
+                            <div class="agent-status online">
+                                <h4>${agent.icon} ${agent.name}</h4>
+                                <span class="status-badge online">✓ Online</span>
+                                <p style="margin-top: 8px; font-size: 0.9em; color: #666;">
+                                    Puerto: ${agent.port}<br>
+                                    Precio: ${data.price}
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="agent-status offline">
+                                <h4>${agent.icon} ${agent.name}</h4>
+                                <span class="status-badge offline">✗ Error</span>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    html += `
+                        <div class="agent-status offline">
+                            <h4>${agent.icon} ${agent.name}</h4>
+                            <span class="status-badge offline">✗ Offline</span>
+                            <p style="margin-top: 8px; font-size: 0.9em; color: #ef4444;">
+                                Puerto ${agent.port} no responde
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+
+            statusDiv.innerHTML = html;
+        }
+
+        // Query Activities Agent (queries all 3)
+        async function queryActivitiesAgent() {
+            const city = document.getElementById('citySelect').value;
+            const btn = document.getElementById('activitiesBtn');
+            const resultDiv = document.getElementById('activitiesResult');
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${AGENTS.activities}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: `que hacer en ${city}` })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = `
+                        <div class="result success">
+                            <h3>✅ Plan Completo para ${city.toUpperCase()}</h3>
+                            <pre>${data.answer}</pre>
+                    `;
+
+                    if (data.breakdown) {
+                        html += `
+                            <div class="cost-breakdown">
+                                <h4>💰 Desglose de Costos</h4>
+                        `;
+                        Object.entries(data.breakdown).forEach(([key, value]) => {
+                            html += `<div class="cost-item"><span>${key}:</span><span>${value}</span></div>`;
+                        });
+                        html += `</div>`;
+                    }
+
+                    html += `</div>`;
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${data.error}</p>
+                            ${data.hint ? `<p style="margin-top: 10px;"><strong>Tip:</strong> ${data.hint}</p>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error de Conexión</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px;">Asegúrate de que los agentes estén corriendo.</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        // Query Weather Agent
+        async function queryWeatherAgent() {
+            const city = document.getElementById('weatherCity').value;
+            const btn = document.getElementById('weatherBtn');
+            const resultDiv = document.getElementById('weatherResult');
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${AGENTS.weather}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: `clima en ${city}` })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Datos Meteorológicos</h3>
+                            <pre>${data.answer}</pre>
+                            <div class="cost-breakdown">
+                                <div class="cost-item">
+                                    <span>Costo:</span>
+                                    <span>${data.cost}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error de Conexión</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        // Query Fashion Agent
+        async function queryFashionAgent() {
+            const city = document.getElementById('fashionCity').value;
+            const btn = document.getElementById('fashionBtn');
+            const resultDiv = document.getElementById('fashionResult');
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`${AGENTS.fashion}/query`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: `que ropa usar en ${city}` })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    let html = `
+                        <div class="result success">
+                            <h3>✅ Recomendaciones de Moda</h3>
+                            <pre>${data.answer}</pre>
+                    `;
+
+                    if (data.breakdown) {
+                        html += `
+                            <div class="cost-breakdown">
+                                <h4>💰 Desglose de Costos</h4>
+                        `;
+                        Object.entries(data.breakdown).forEach(([key, value]) => {
+                            html += `<div class="cost-item"><span>${key}:</span><span>${value}</span></div>`;
+                        });
+                        html += `</div>`;
+                    }
+
+                    html += `</div>`;
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Error</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error de Conexión</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        // Check agents on page load
+        window.addEventListener('load', () => {
+            checkAllAgents();
+        });
+    </script>
+</body>
+</html>
