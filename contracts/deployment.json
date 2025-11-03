@@ -1,0 +1,10 @@
+{
+  "network": "sepolia",
+  "timestamp": "2025-11-03T17:48:57.829Z",
+  "deployer": "0xda77B09a90Dcb4E1b10CDEaeCaEfa343BA491bc0",
+  "contracts": {
+    "PaymentProcessor": "0x231eA77d88603F40C48Ad98f085F5646523bCe74",
+    "AgentRegistryV2": "0x22265732666ea19B72627593Ff515f5a37b0dc77",
+    "USDC": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+  }
+}
