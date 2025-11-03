@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Hub - Web3 Integration</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .wallet-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.success {
+            background: #10b981;
+        }
+
+        .btn.danger {
+            background: #ef4444;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .tx-link {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .agent-list {
+            margin-top: 20px;
+        }
+
+        .agent-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .agent-item h4 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .agent-item p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Agent Hub - Web3</h1>
+            <p>Pagos reales on-chain con USDC</p>
+        </div>
+
+        <div class="wallet-section">
+            <div class="wallet-info">
+                <div style="flex: 1;">
+                    <strong>Wallet:</strong>
+                    <div id="walletAddress" class="wallet-address">No conectada</div>
+                </div>
+                <div>
+                    <strong>Balance USDC:</strong>
+                    <div id="usdcBalance" style="font-size: 1.2em; color: #667eea;">0.00</div>
+                </div>
+                <button id="connectBtn" class="btn" onclick="connectWallet()">Conectar MetaMask</button>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Register Agent -->
+            <div class="card">
+                <h2>📝 Registrar Agente On-Chain</h2>
+                <div class="form-group">
+                    <label>Nombre del Agente:</label>
+                    <input type="text" id="registerName" placeholder="Mi Agente AI">
+                </div>
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <input type="text" id="registerDesc" placeholder="Agente especializado en...">
+                </div>
+                <div class="form-group">
+                    <label>Endpoint A2A:</label>
+                    <input type="text" id="registerEndpoint" placeholder="https://my-agent.com/a2a">
+                </div>
+                <div class="form-group">
+                    <label>Precio por Query (USDC):</label>
+                    <input type="number" id="registerPrice" step="0.001" value="0.001">
+                </div>
+                <button class="btn" onclick="registerAgent()" id="registerBtn">Registrar Agente</button>
+                <div id="registerStatus"></div>
+            </div>
+
+            <!-- Create Payment -->
+            <div class="card">
+                <h2>💳 Crear Pago USDC</h2>
+                <div class="form-group">
+                    <label>Dirección del Agente:</label>
+                    <input type="text" id="paymentAgent" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label>Monto (USDC):</label>
+                    <input type="number" id="paymentAmount" step="0.001" value="0.001">
+                </div>
+                <div class="form-group">
+                    <label>Service ID:</label>
+                    <input type="text" id="paymentService" placeholder="query_12345">
+                </div>
+                <button class="btn success" onclick="createPayment()" id="paymentBtn">Crear Pago</button>
+                <div id="paymentStatus"></div>
+            </div>
+
+            <!-- Query Agent -->
+            <div class="card">
+                <h2>🔍 Consultar Agente</h2>
+                <div class="form-group">
+                    <label>Token ID del Agente:</label>
+                    <input type="number" id="queryTokenId" placeholder="1">
+                </div>
+                <div class="form-group">
+                    <label>Tu Consulta:</label>
+                    <input type="text" id="queryText" placeholder="¿Cuál es el precio de ETH?">
+                </div>
+                <div class="form-group">
+                    <label>Payment ID (después de pagar):</label>
+                    <input type="text" id="queryPaymentId" placeholder="pay_...">
+                </div>
+                <button class="btn" onclick="queryAgent()" id="queryBtn">Enviar Consulta</button>
+                <div id="queryStatus"></div>
+            </div>
+
+            <!-- Withdraw Earnings -->
+            <div class="card">
+                <h2>💰 Retirar Ganancias</h2>
+                <div class="form-group">
+                    <label>Tus Ganancias Actuales:</label>
+                    <div id="earningsDisplay" style="font-size: 1.5em; color: #10b981; margin: 10px 0;">0.000 USDC</div>
+                </div>
+                <div class="form-group">
+                    <label>Moneda:</label>
+                    <select id="withdrawCurrency">
+                        <option value="USDC">USDC</option>
+                        <option value="ETH">ETH</option>
+                    </select>
+                </div>
+                <button class="btn success" onclick="checkEarnings()" style="margin-right: 10px;">Actualizar</button>
+                <button class="btn success" onclick="withdrawEarnings()" id="withdrawBtn">Retirar</button>
+                <div id="withdrawStatus"></div>
+            </div>
+        </div>
+
+        <!-- Active Agents List -->
+        <div class="card">
+            <h2>🤖 Agentes Activos On-Chain</h2>
+            <button class="btn" onclick="loadAgents()">Actualizar Lista</button>
+            <div id="agentsList" class="agent-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000';
+        let userAddress = null;
+        let provider = null;
+        let signer = null;
+
+        // Contract ABIs (simplified)
+        const PAYMENT_PROCESSOR_ABI = [
+            "function createPaymentUSDC(string paymentId, address agent, uint256 amount, string serviceId)",
+            "function verifyPayment(string paymentId) view returns (bool)",
+            "function agentEarnings(address) view returns (uint256)",
+            "function withdrawUSDC()",
+            "function withdrawETH()"
+        ];
+
+        const USDC_ABI = [
+            "function balanceOf(address) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function decimals() view returns (uint8)"
+        ];
+
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    signer = await provider.getSigner();
+                    userAddress = await signer.getAddress();
+
+                    document.getElementById('walletAddress').textContent = userAddress;
+                    document.getElementById('connectBtn').textContent = '✓ Conectado';
+                    document.getElementById('connectBtn').classList.add('success');
+
+                    await updateUSDCBalance();
+                    await checkEarnings();
+                } catch (error) {
+                    alert('Error conectando wallet: ' + error.message);
+                }
+            } else {
+                alert('Por favor instala MetaMask!');
+            }
+        }
+
+        async function updateUSDCBalance() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+
+                if (data.contracts && data.contracts.usdc) {
+                    const usdcContract = new ethers.Contract(data.contracts.usdc, USDC_ABI, provider);
+                    const balance = await usdcContract.balanceOf(userAddress);
+                    const decimals = await usdcContract.decimals();
+                    const formatted = ethers.formatUnits(balance, decimals);
+
+                    document.getElementById('usdcBalance').textContent = parseFloat(formatted).toFixed(3) + ' USDC';
+                }
+            } catch (error) {
+                console.error('Error getting USDC balance:', error);
+            }
+        }
+
+        async function registerAgent() {
+            if (!signer) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            const name = document.getElementById('registerName').value;
+            const description = document.getElementById('registerDesc').value;
+            const endpoint = document.getElementById('registerEndpoint').value;
+            const price = document.getElementById('registerPrice').value;
+
+            if (!name || !endpoint) {
+                alert('Completa todos los campos requeridos');
+                return;
+            }
+
+            showStatus('registerStatus', 'Registrando agente on-chain...', 'info');
+            document.getElementById('registerBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/agents/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        endpoint,
+                        walletAddress: userAddress,
+                        pricePerQuery: price
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data.blockchain) {
+                    showStatus('registerStatus',
+                        `✅ Agente registrado! Token ID: ${data.data.blockchain.tokenId}<br>` +
+                        `TX: <a class="tx-link" href="https://sepolia.etherscan.io/tx/${data.data.blockchain.txHash}" target="_blank">${data.data.blockchain.txHash.slice(0, 10)}...</a>`,
+                        'success');
+                } else {
+                    showStatus('registerStatus', '⚠️ Registrado localmente (blockchain no disponible)', 'info');
+                }
+            } catch (error) {
+                showStatus('registerStatus', '❌ Error: ' + error.message, 'error');
+            } finally {
+                document.getElementById('registerBtn').disabled = false;
+            }
+        }
+
+        async function createPayment() {
+            if (!signer) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            const agentAddress = document.getElementById('paymentAgent').value;
+            const amount = document.getElementById('paymentAmount').value;
+            const serviceId = document.getElementById('paymentService').value;
+
+            if (!agentAddress || !amount || !serviceId) {
+                alert('Completa todos los campos');
+                return;
+            }
+
+            showStatus('paymentStatus', 'Creando pago...', 'info');
+            document.getElementById('paymentBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/payments/create`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agentAddress,
+                        amount,
+                        serviceId,
+                        currency: 'USDC'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('paymentStatus',
+                        `✅ Pago creado!<br>Payment ID: ${data.paymentId}<br>` +
+                        `TX: <a class="tx-link" href="https://sepolia.etherscan.io/tx/${data.txHash}" target="_blank">${data.txHash.slice(0, 10)}...</a>`,
+                        'success');
+
+                    // Auto-fill payment ID in query section
+                    document.getElementById('queryPaymentId').value = data.paymentId;
+                } else {
+                    showStatus('paymentStatus', '❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+
+                await updateUSDCBalance();
+            } catch (error) {
+                showStatus('paymentStatus', '❌ Error: ' + error.message, 'error');
+            } finally {
+                document.getElementById('paymentBtn').disabled = false;
+            }
+        }
+
+        async function queryAgent() {
+            const tokenId = document.getElementById('queryTokenId').value;
+            const query = document.getElementById('queryText').value;
+            const paymentId = document.getElementById('queryPaymentId').value;
+
+            if (!tokenId || !query || !paymentId) {
+                alert('Completa todos los campos');
+                return;
+            }
+
+            showStatus('queryStatus', 'Enviando consulta...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/agents/agent_${tokenId}/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Payment-Id': paymentId
+                    },
+                    body: JSON.stringify({ query })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('queryStatus', `✅ Respuesta: ${data.answer}`, 'success');
+                } else {
+                    showStatus('queryStatus', `❌ Error: ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showStatus('queryStatus', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function checkEarnings() {
+            if (!userAddress) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/agents/${userAddress}/earnings`);
+                const data = await response.json();
+
+                if (data.earnings) {
+                    document.getElementById('earningsDisplay').textContent = `${data.earnings} ${data.currency}`;
+                }
+            } catch (error) {
+                console.error('Error checking earnings:', error);
+            }
+        }
+
+        async function withdrawEarnings() {
+            if (!signer) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            const currency = document.getElementById('withdrawCurrency').value;
+
+            showStatus('withdrawStatus', 'Procesando retiro...', 'info');
+            document.getElementById('withdrawBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/agents/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currency })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showStatus('withdrawStatus',
+                        `✅ Retiro exitoso!<br>TX: <a class="tx-link" href="https://sepolia.etherscan.io/tx/${data.txHash}" target="_blank">${data.txHash.slice(0, 10)}...</a>`,
+                        'success');
+                    await checkEarnings();
+                    await updateUSDCBalance();
+                } else {
+                    showStatus('withdrawStatus', '❌ Error: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                showStatus('withdrawStatus', '❌ Error: ' + error.message, 'error');
+            } finally {
+                document.getElementById('withdrawBtn').disabled = false;
+            }
+        }
+
+        async function loadAgents() {
+            try {
+                const response = await fetch(`${API_URL}/agents`);
+                const data = await response.json();
+
+                const listDiv = document.getElementById('agentsList');
+                listDiv.innerHTML = '';
+
+                if (data.blockchainAgents && data.blockchainAgents.length > 0) {
+                    data.blockchainAgents.forEach(agent => {
+                        const item = document.createElement('div');
+                        item.className = 'agent-item';
+                        item.innerHTML = `
+                            <h4>${agent.name} (Token #${agent.tokenId})</h4>
+                            <p><strong>Owner:</strong> ${agent.owner.slice(0, 10)}...</p>
+                            <p><strong>Precio:</strong> ${agent.pricePerQuery} USDC</p>
+                            <p><strong>Endpoint:</strong> ${agent.endpoint}</p>
+                            <p><strong>Consultas:</strong> ${agent.totalQueries} | <strong>Ganancias:</strong> ${agent.totalEarnings} USDC</p>
+                        `;
+                        listDiv.appendChild(item);
+                    });
+                } else if (data.agents && data.agents.length > 0) {
+                    listDiv.innerHTML = '<p>Agentes registrados localmente (blockchain no disponible)</p>';
+                } else {
+                    listDiv.innerHTML = '<p>No hay agentes registrados todavía</p>';
+                }
+            } catch (error) {
+                document.getElementById('agentsList').innerHTML = '<p>Error cargando agentes</p>';
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+        }
+
+        // Auto-load agents on page load
+        window.addEventListener('load', () => {
+            loadAgents();
+        });
+    </script>
+</body>
+</html>

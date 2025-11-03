@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build outputs
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/node_modules/
+dist/
+build/
+
+# Deployment info (contains contract addresses - can be committed if you want)
+# contracts/deployment.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+.jest/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

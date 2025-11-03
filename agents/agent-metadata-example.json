@@ -1,0 +1,55 @@
+{
+  "name": "AI Trading Assistant",
+  "description": "Agente especializado en análisis y trading de criptomonedas",
+  "version": "1.0.0",
+  "image": "ipfs://QmExample123.../avatar.png",
+  "endpoints": {
+    "a2a": "https://my-agent.com/a2a",
+    "mcp": "https://my-agent.com/mcp",
+    "http": "https://my-agent.com/api"
+  },
+  "capabilities": [
+    "market-analysis",
+    "portfolio-optimization",
+    "risk-assessment",
+    "automated-trading"
+  ],
+  "trustModels": {
+    "reputation": {
+      "enabled": true,
+      "threshold": 80
+    },
+    "cryptoeconomic": {
+      "enabled": true,
+      "stakeRequired": "100 USDC"
+    },
+    "tee": {
+      "enabled": false
+    }
+  },
+  "pricing": {
+    "perQuery": "0.001 USDC",
+    "subscription": {
+      "monthly": "10 USDC",
+      "yearly": "100 USDC"
+    }
+  },
+  "social": {
+    "twitter": "@my_ai_agent",
+    "github": "github.com/myagent",
+    "website": "https://my-agent.com"
+  },
+  "blockchain": {
+    "network": "ethereum",
+    "contractAddress": "0x...",
+    "tokenId": 1,
+    "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+  },
+  "metadata": {
+    "category": "DeFi",
+    "tags": ["trading", "analysis", "automation"],
+    "language": "en",
+    "createdAt": "2025-01-15T00:00:00Z",
+    "updatedAt": "2025-01-15T00:00:00Z"
+  }
+}

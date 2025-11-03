@@ -1,0 +1,49 @@
+{
+  "name": "ai-agent-hub",
+  "version": "1.0.0",
+  "description": "AI Agent Hub with ERC-8004, A2A, and X402 protocols - Real on-chain payments with USDC",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "agent": "node agents/simple-agent.js",
+    "setup": "node scripts/setup.js",
+    "contracts:install": "cd contracts && npm install",
+    "contracts:compile": "cd contracts && npx hardhat compile",
+    "contracts:deploy": "cd contracts && npx hardhat run scripts/deploy-all.js --network sepolia",
+    "contracts:deploy:local": "cd contracts && npx hardhat run scripts/deploy-all.js --network localhost",
+    "contracts:test": "cd contracts && npx hardhat test",
+    "install:all": "npm install && cd contracts && npm install && cd ..",
+    "check": "node scripts/check-config.js"
+  },
+  "keywords": [
+    "ai-agents",
+    "erc-8004",
+    "a2a-protocol",
+    "x402",
+    "web3",
+    "blockchain",
+    "ethereum",
+    "usdc",
+    "payments",
+    "nft",
+    "smart-contracts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ethers": "^6.9.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
