@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-package-lock.json
+# package-lock.json  # REMOVED - needed for Railway deployment
 
 # Environment - CRITICAL: Never commit these!
 .env
