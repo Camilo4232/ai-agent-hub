@@ -595,20 +595,23 @@
             usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
         };
 
+        // Use relative URLs so it works both locally and in production
+        const BASE_URL = window.location.origin;
+
         const AGENTS = {
             weather: {
                 address: '0x1111111111111111111111111111111111111111',
-                endpoint: 'http://localhost:3001/query',
+                endpoint: `${BASE_URL}/api/agents/weather/query`,
                 price: '0.001'
             },
             fashion: {
                 address: '0x2222222222222222222222222222222222222222',
-                endpoint: 'http://localhost:3002/query',
+                endpoint: `${BASE_URL}/api/agents/fashion/query`,
                 price: '0.003'
             },
             activities: {
                 address: '0x3333333333333333333333333333333333333333',
-                endpoint: 'http://localhost:3003/query',
+                endpoint: `${BASE_URL}/api/agents/activities/query`,
                 price: '0.008'
             }
         };
@@ -919,26 +922,62 @@
 
                 // 2. Query agent
                 const query = `que hacer en ${city}`;
-                const response = await fetch(agent.endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Payment-Id': paymentId
-                    },
-                    body: JSON.stringify({ query })
-                });
+                let response;
+
+                try {
+                    response = await fetch(agent.endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Payment-Id': paymentId
+                        },
+                        body: JSON.stringify({
+                            query: query,
+                            paymentId: paymentId
+                        })
+                    });
+                } catch (fetchError) {
+                    throw new Error(`Error de conexión con el agente: ${fetchError.message}. Verifica que el servidor esté corriendo.`);
+                }
+
+                // Check HTTP status
+                if (!response.ok) {
+                    let errorMsg = `Error HTTP ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.error || errorMsg;
+                    } catch (e) {
+                        errorMsg = await response.text() || errorMsg;
+                    }
+
+                    if (response.status === 402) {
+                        showStatus(agentKey + 'Status',
+                            `❌ Pago Requerido (HTTP 402)<br><br>` +
+                            `Detalles: ${errorMsg}<br><br>` +
+                            `El pago fue creado on-chain pero el agente no lo aceptó.<br>` +
+                            `Verifica que el Payment ID sea correcto: ${paymentId}`,
+                            'error');
+                    } else {
+                        showStatus(agentKey + 'Status',
+                            `❌ Error ${response.status}: ${errorMsg}`,
+                            'error');
+                    }
+                    return;
+                }
 
                 const data = await response.json();
 
                 if (data.success) {
-                    document.getElementById(agentKey + 'Response').textContent = data.answer;
+                    // Display the response
+                    const responseText = JSON.stringify(data.result || data, null, 2);
+                    document.getElementById(agentKey + 'Response').textContent = responseText;
                     document.getElementById(agentKey + 'Response').style.display = 'block';
 
                     showStatus(agentKey + 'Status',
                         `✅ ¡Consulta exitosa!<br>Costo: ${agent.price} USDC<br>Payment ID: ${paymentId}`,
                         'success');
                 } else {
-                    showStatus(agentKey + 'Status', '❌ Error en la consulta: ' + data.error, 'error');
+                    showStatus(agentKey + 'Status', '❌ Error en la consulta: ' + (data.error || 'Error desconocido'), 'error');
                 }
 
                 await updateBalances();
