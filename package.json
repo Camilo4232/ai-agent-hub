@@ -5,8 +5,8 @@
   "main": "backend/server.js",
   "type": "module",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node --watch backend/server.js",
+    "start": "NODE_ENV=production node backend/server.js",
+    "dev": "NODE_ENV=development node --watch backend/server.js",
     "agent": "node agents/simple-agent.js",
     "setup": "node scripts/setup.js",
     "setup-env": "node scripts/setup-env.cjs",
@@ -48,6 +48,7 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
+    "@solana/web3.js": "^1.98.4",
     "axios": "^1.6.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
