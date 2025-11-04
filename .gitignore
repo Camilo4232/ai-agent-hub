@@ -2,10 +2,19 @@
 node_modules/
 package-lock.json
 
-# Environment
+# Environment - CRITICAL: Never commit these!
 .env
 .env.local
 .env.production
+.env.*.local
+.env.backup
+.env.*backup
+.env.sepolia
+.env.base-sepolia
+*.pem
+*.key
+secrets/
+.secrets/
 
 # Build outputs
 contracts/artifacts/
@@ -24,6 +33,8 @@ build/
 *.swp
 *.swo
 .history/
+.cursorignore
+.cursor/
 
 # OS
 .DS_Store
@@ -46,3 +57,11 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Temporary documentation (keep only core docs)
+*_COMPLETE.md
+*_SUMMARY.md
+*_INSTRUCTIONS.md
+*_GUIDE_BACKUP.md
+DEPLOYMENT_SUMMARY.md
+NETWORK_SETUP_COMPLETE.md

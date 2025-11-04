@@ -9,6 +9,10 @@
     "dev": "node --watch backend/server.js",
     "agent": "node agents/simple-agent.js",
     "setup": "node scripts/setup.js",
+    "setup-env": "node scripts/setup-env.cjs",
+    "generate-keys": "node scripts/generate-keys.cjs",
+    "validate-config": "node scripts/validate-config.cjs",
+    "test-connection": "node scripts/test-connection.cjs",
     "auto-deploy": "node scripts/auto-deploy.js",
     "start-all": "node scripts/start-all.js",
     "contracts:install": "cd contracts && npm install",
@@ -18,7 +22,14 @@
     "contracts:test": "cd contracts && npx hardhat test",
     "install:all": "npm install && cd contracts && npm install && cd ..",
     "check": "node scripts/check-config.js",
-    "quick-start": "npm run auto-deploy && npm start"
+    "quick-start": "npm run auto-deploy && npm start",
+    "demo:a2a": "node demo/demo-agents-a2a.js",
+    "demo:x402": "node demo/x402-client.js",
+    "x402:seller": "node demo/x402-seller-sepolia.js",
+    "x402:buy": "node demo/x402-client-local.js",
+    "check-usdc": "node scripts/check-usdc-balance.cjs",
+    "switch:base": "node scripts/switch-network.cjs base",
+    "switch:sepolia": "node scripts/switch-network.cjs sepolia"
   },
   "keywords": [
     "ai-agents",
