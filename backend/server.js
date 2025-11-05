@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { paymentVerifier } from '../agents/shared/payment-verifier.js';
 
 // Load environment variables
 dotenv.config();
@@ -79,14 +80,45 @@ app.get('/api/status', (req, res) => {
 app.post('/api/agents/weather/query', async (req, res) => {
     try {
         const { query, paymentId } = req.body;
+        const paymentIdHeader = req.headers['x-payment-id'];
 
-        // Simulate weather agent response
-        // In production, this would call the actual weather agent microservice
+        // Use payment ID from header or body
+        const actualPaymentId = paymentIdHeader || paymentId;
+
+        if (!actualPaymentId) {
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: 'X-Payment-Id header or paymentId in body is required',
+                code: 'PAYMENT_MISSING'
+            });
+        }
+
+        // Verify payment on-chain
+        console.log(`🔍 [Weather Agent] Verifying payment: ${actualPaymentId}`);
+        const verification = await paymentVerifier.verifyPayment(
+            actualPaymentId,
+            '0x1111111111111111111111111111111111111111', // Weather agent address
+            '0.001' // Minimum payment amount
+        );
+
+        if (!verification.verified) {
+            console.log(`❌ [Weather Agent] Payment verification failed: ${verification.error}`);
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: verification.error,
+                code: 'PAYMENT_INVALID',
+                details: verification.details
+            });
+        }
+
+        console.log(`✅ [Weather Agent] Payment verified! Processing query...`);
+
+        // Process the query (in production, this would call actual weather API or AI)
         const response = {
             success: true,
             agent: 'Weather Agent',
             query,
-            paymentId,
+            paymentId: actualPaymentId,
             result: {
                 location: extractLocation(query),
                 temperature: Math.floor(Math.random() * 30) + 10,
@@ -94,12 +126,17 @@ app.post('/api/agents/weather/query', async (req, res) => {
                 humidity: Math.floor(Math.random() * 40) + 50,
                 wind: Math.floor(Math.random() * 20) + 5
             },
+            payment: verification.details,
             timestamp: Date.now()
         };
 
         res.json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(`❌ [Weather Agent] Error:`, error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+        });
     }
 });
 
@@ -107,12 +144,43 @@ app.post('/api/agents/weather/query', async (req, res) => {
 app.post('/api/agents/fashion/query', async (req, res) => {
     try {
         const { query, paymentId } = req.body;
+        const paymentIdHeader = req.headers['x-payment-id'];
+
+        const actualPaymentId = paymentIdHeader || paymentId;
+
+        if (!actualPaymentId) {
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: 'X-Payment-Id header or paymentId in body is required',
+                code: 'PAYMENT_MISSING'
+            });
+        }
+
+        // Verify payment on-chain
+        console.log(`🔍 [Fashion Agent] Verifying payment: ${actualPaymentId}`);
+        const verification = await paymentVerifier.verifyPayment(
+            actualPaymentId,
+            '0x2222222222222222222222222222222222222222', // Fashion agent address
+            '0.003' // Minimum payment amount
+        );
+
+        if (!verification.verified) {
+            console.log(`❌ [Fashion Agent] Payment verification failed: ${verification.error}`);
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: verification.error,
+                code: 'PAYMENT_INVALID',
+                details: verification.details
+            });
+        }
+
+        console.log(`✅ [Fashion Agent] Payment verified! Processing query...`);
 
         const response = {
             success: true,
             agent: 'Fashion Agent',
             query,
-            paymentId,
+            paymentId: actualPaymentId,
             result: {
                 location: extractLocation(query),
                 recommendations: [
@@ -123,12 +191,17 @@ app.post('/api/agents/fashion/query', async (req, res) => {
                 style: 'Casual urbano',
                 season: 'Verano'
             },
+            payment: verification.details,
             timestamp: Date.now()
         };
 
         res.json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(`❌ [Fashion Agent] Error:`, error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+        });
     }
 });
 
@@ -136,12 +209,43 @@ app.post('/api/agents/fashion/query', async (req, res) => {
 app.post('/api/agents/activities/query', async (req, res) => {
     try {
         const { query, paymentId } = req.body;
+        const paymentIdHeader = req.headers['x-payment-id'];
+
+        const actualPaymentId = paymentIdHeader || paymentId;
+
+        if (!actualPaymentId) {
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: 'X-Payment-Id header or paymentId in body is required',
+                code: 'PAYMENT_MISSING'
+            });
+        }
+
+        // Verify payment on-chain
+        console.log(`🔍 [Activities Agent] Verifying payment: ${actualPaymentId}`);
+        const verification = await paymentVerifier.verifyPayment(
+            actualPaymentId,
+            '0x3333333333333333333333333333333333333333', // Activities agent address
+            '0.008' // Minimum payment amount
+        );
+
+        if (!verification.verified) {
+            console.log(`❌ [Activities Agent] Payment verification failed: ${verification.error}`);
+            return res.status(402).json({
+                error: 'Payment Required',
+                message: verification.error,
+                code: 'PAYMENT_INVALID',
+                details: verification.details
+            });
+        }
+
+        console.log(`✅ [Activities Agent] Payment verified! Processing query...`);
 
         const response = {
             success: true,
             agent: 'Activities Agent',
             query,
-            paymentId,
+            paymentId: actualPaymentId,
             result: {
                 location: extractLocation(query),
                 activities: [
@@ -153,12 +257,17 @@ app.post('/api/agents/activities/query', async (req, res) => {
                 duration: 'Día completo',
                 budget: 'Medio'
             },
+            payment: verification.details,
             timestamp: Date.now()
         };
 
         res.json(response);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(`❌ [Activities Agent] Error:`, error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+        });
     }
 });
 

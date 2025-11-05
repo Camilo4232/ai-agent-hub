@@ -806,10 +806,10 @@
     </div>
 
     <script>
-        // Configuration
+        // Configuration - Using actual deployed contract addresses from deployment.json
         const CONTRACTS = {
-            paymentProcessor: '0x231eA77d88603F40C48Ad98f085F5646523bCe74',
-            agentRegistry: '0x22265732666ea19B72627593Ff515f5a37b0dc77',
+            paymentProcessor: '0x97CA3e550b7b6091A652645e89f98946Cda5Ac08',
+            agentRegistry: '0x5a50a736bEea9D7120E3FD915E90d2940B5bF228',
             usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
         };
 
@@ -838,6 +838,48 @@
         let signer = null;
         let userAddress = null;
         let currentChainId = 11155111; // Default: Sepolia
+
+        // localStorage keys for wallet state persistence
+        const STORAGE_KEYS = {
+            WALLET_CONNECTED: 'ai_agent_hub_wallet_connected',
+            USER_ADDRESS: 'ai_agent_hub_user_address',
+            CHAIN_ID: 'ai_agent_hub_chain_id'
+        };
+
+        // localStorage Helper Functions
+        function saveWalletState(address, chainId) {
+            try {
+                localStorage.setItem(STORAGE_KEYS.WALLET_CONNECTED, 'true');
+                localStorage.setItem(STORAGE_KEYS.USER_ADDRESS, address);
+                localStorage.setItem(STORAGE_KEYS.CHAIN_ID, chainId.toString());
+                console.log('✓ Wallet state saved to localStorage');
+            } catch (error) {
+                console.error('Error saving wallet state:', error);
+            }
+        }
+
+        function clearWalletState() {
+            try {
+                localStorage.removeItem(STORAGE_KEYS.WALLET_CONNECTED);
+                localStorage.removeItem(STORAGE_KEYS.USER_ADDRESS);
+                localStorage.removeItem(STORAGE_KEYS.CHAIN_ID);
+                console.log('✓ Wallet state cleared from localStorage');
+            } catch (error) {
+                console.error('Error clearing wallet state:', error);
+            }
+        }
+
+        function getStoredWalletState() {
+            try {
+                const connected = localStorage.getItem(STORAGE_KEYS.WALLET_CONNECTED) === 'true';
+                const address = localStorage.getItem(STORAGE_KEYS.USER_ADDRESS);
+                const chainId = localStorage.getItem(STORAGE_KEYS.CHAIN_ID);
+                return { connected, address, chainId: chainId ? parseInt(chainId) : null };
+            } catch (error) {
+                console.error('Error reading wallet state:', error);
+                return { connected: false, address: null, chainId: null };
+            }
+        }
 
         // Chain configurations with RPC endpoints
         const CHAIN_CONFIGS = {
@@ -1034,25 +1076,21 @@
                 document.getElementById('connectBtn').style.display = 'none';
                 document.getElementById('disconnectBtn').style.display = 'inline-block';
 
+                // Save wallet state to localStorage
+                saveWalletState(userAddress, network.chainId);
+
+                // Enable agent buttons
+                const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+                buttons.forEach(btnId => {
+                    const btn = document.getElementById(btnId);
+                    if (btn) btn.disabled = false;
+                });
+
                 await updateBalances();
 
                 showStatus('approveStatus', `✅ ${walletName} conectada exitosamente!`, 'success');
 
-                // Escuchar cambios de cuenta y red
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    if (accounts.length === 0) {
-                        console.log('Wallet desconectada');
-                        location.reload();
-                    } else {
-                        console.log('Cuenta cambiada');
-                        location.reload();
-                    }
-                });
-
-                window.ethereum.on('chainChanged', (chainId) => {
-                    console.log('Red cambiada:', chainId);
-                    location.reload();
-                });
+                // Setup wallet event listeners (done in setupWalletListeners function)
 
             } catch (error) {
                 console.error('Error connecting wallet:', error);
@@ -1334,20 +1372,37 @@
         function setupWalletListeners() {
             if (typeof window.ethereum !== 'undefined') {
                 // Detect account changes
-                window.ethereum.on('accountsChanged', (accounts) => {
+                window.ethereum.on('accountsChanged', async (accounts) => {
                     console.log('Accounts changed:', accounts);
                     if (accounts.length === 0) {
                         // Wallet disconnected
                         handleWalletDisconnection();
                     } else {
-                        // Account switched - reconnect
-                        location.reload();
+                        // Account switched - attempt silent reconnection
+                        console.log('Account switched, attempting silent reconnection...');
+                        try {
+                            provider = new ethers.providers.Web3Provider(window.ethereum);
+                            signer = provider.getSigner();
+                            userAddress = await signer.getAddress();
+
+                            const network = await provider.getNetwork();
+                            saveWalletState(userAddress, network.chainId);
+
+                            document.getElementById('walletAddress').textContent = userAddress;
+                            await updateBalances();
+
+                            showStatus('approveStatus', '✅ Cuenta cambiada exitosamente', 'success');
+                        } catch (error) {
+                            console.error('Error reconnecting:', error);
+                            handleWalletDisconnection();
+                        }
                     }
                 });
 
-                // Detect chain changes
+                // Detect chain changes - reload is necessary here for contract addresses
                 window.ethereum.on('chainChanged', (chainId) => {
                     console.log('Chain changed to:', chainId);
+                    clearWalletState(); // Clear old state before reload
                     location.reload();
                 });
 
@@ -1364,6 +1419,9 @@
             signer = null;
             userAddress = null;
 
+            // Clear localStorage
+            clearWalletState();
+
             // Reset UI
             document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
             document.getElementById('usdcBalance').textContent = '0';
@@ -1377,9 +1435,8 @@
             // Show reconnection message
             showStatus('approveStatus',
                 '⚠️ <strong>Wallet Desconectada</strong><br><br>' +
-                'Tu wallet se ha desconectado. Por favor:<br>' +
-                '1. Conecta tu wallet nuevamente<br>' +
-                '2. O recarga la página para reconectar<br><br>' +
+                'Tu wallet se ha desconectado.<br>' +
+                'Haz clic en el botón para reconectar:<br><br>' +
                 '<button onclick="connectWallet()" class="btn" style="margin-top: 10px;">Reconectar Wallet</button>',
                 'warning');
 
@@ -1402,13 +1459,16 @@
             signer = null;
             userAddress = null;
 
+            // Clear localStorage
+            clearWalletState();
+
             // Reset UI
             document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
             document.getElementById('usdcBalance').textContent = '0';
             document.getElementById('ethBalance').textContent = '0';
             document.getElementById('networkBadge').textContent = 'No conectada';
 
-            // Toggle buttons
+            // Toggle buttons - THIS IS THE FIX!
             document.getElementById('connectBtn').style.display = 'inline-block';
             document.getElementById('disconnectBtn').style.display = 'none';
 
@@ -1430,7 +1490,7 @@
             showStatus('approveStatus',
                 '✅ <strong>Wallet Desconectada Exitosamente</strong><br><br>' +
                 'Has desconectado tu wallet de forma segura.<br>' +
-                'Conecta nuevamente cuando quieras usar los agentes.',
+                'Puedes volver a conectar cuando quieras.',
                 'success');
 
             console.log('✓ Wallet manually disconnected');
@@ -1494,6 +1554,73 @@
             }
         }
 
+        // Auto-reconnect function - silently reconnects if user was previously connected
+        async function attemptAutoReconnect() {
+            const storedState = getStoredWalletState();
+
+            if (!storedState.connected || !storedState.address) {
+                console.log('No previous wallet connection found');
+                return;
+            }
+
+            if (typeof window.ethereum === 'undefined') {
+                console.log('No wallet provider found, clearing stored state');
+                clearWalletState();
+                return;
+            }
+
+            console.log('🔄 Attempting silent reconnection to:', storedState.address);
+
+            try {
+                // Request accounts WITHOUT showing permission popup
+                // This only works if user previously approved
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts' // Note: eth_accounts, not eth_requestAccounts
+                });
+
+                if (accounts.length === 0 || accounts[0].toLowerCase() !== storedState.address.toLowerCase()) {
+                    console.log('Wallet not connected or address changed, clearing state');
+                    clearWalletState();
+                    return;
+                }
+
+                // Silent reconnection successful
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                const network = await provider.getNetwork();
+
+                // Check if on correct network
+                if (network.chainId !== 11155111) {
+                    console.log('Wrong network detected, clearing state');
+                    clearWalletState();
+                    return;
+                }
+
+                // Update UI
+                document.getElementById('walletAddress').textContent = userAddress;
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('disconnectBtn').style.display = 'inline-block';
+
+                // Enable agent buttons
+                const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+                buttons.forEach(btnId => {
+                    const btn = document.getElementById(btnId);
+                    if (btn) btn.disabled = false;
+                });
+
+                await updateBalances();
+
+                console.log('✅ Silent reconnection successful');
+                showStatus('approveStatus', '✅ Wallet reconectada automáticamente', 'success');
+
+            } catch (error) {
+                console.error('Auto-reconnect failed:', error);
+                clearWalletState();
+            }
+        }
+
         // Check on load
         window.addEventListener('load', () => {
             console.log('=== Sistema cargado ===');
@@ -1503,6 +1630,9 @@
 
             // Setup wallet event listeners
             setupWalletListeners();
+
+            // Attempt silent reconnection if wallet was previously connected
+            attemptAutoReconnect();
 
             // Advertencia sobre file://
             if (window.location.protocol === 'file:') {

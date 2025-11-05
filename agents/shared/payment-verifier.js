@@ -5,8 +5,9 @@ import { ethers } from 'ethers';
  * Verifies payments on-chain before processing agent requests
  */
 
-const PAYMENT_PROCESSOR_ADDRESS = '0x231eA77d88603F40C48Ad98f085F5646523bCe74';
-const SEPOLIA_RPC = process.env.SEPOLIA_RPC_URL || 'https://rpc.sepolia.org';
+// Use correct deployed contract address from deployment.json
+const PAYMENT_PROCESSOR_ADDRESS = process.env.PAYMENT_PROCESSOR_ADDRESS || '0x97CA3e550b7b6091A652645e89f98946Cda5Ac08';
+const SEPOLIA_RPC = process.env.RPC_URL || process.env.SEPOLIA_RPC_URL || 'https://rpc.sepolia.org';
 
 const PAYMENT_PROCESSOR_ABI = [
     "function verifyPayment(string paymentId) view returns (bool)",
