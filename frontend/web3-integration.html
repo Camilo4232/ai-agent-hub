@@ -234,6 +234,81 @@
             border-color: #667eea;
         }
 
+        /* Chain Selector */
+        .chain-selector {
+            margin-top: 15px;
+        }
+
+        .chain-category {
+            margin-bottom: 20px;
+        }
+
+        .chain-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .chain-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .chain-option:hover:not(.disabled) {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .chain-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f9fafb;
+        }
+
+        .chain-icon {
+            font-size: 2em;
+            line-height: 1;
+        }
+
+        .chain-info {
+            flex: 1;
+        }
+
+        .chain-info strong {
+            display: block;
+            color: #1f2937;
+            font-size: 1.05em;
+            margin-bottom: 2px;
+        }
+
+        .chain-info small {
+            color: #6b7280;
+            font-size: 0.85em;
+        }
+
+        .chain-badge {
+            background: #10b981;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .chain-option.disabled .chain-badge {
+            background: #9ca3af;
+        }
+
         /* Response Area */
         .response-area {
             background: #f9fafb;
@@ -411,10 +486,153 @@
                 </div>
                 <div class="wallet-item">
                     <button id="connectBtn" class="btn" onclick="connectWallet()">Conectar Wallet</button>
+                    <button id="disconnectBtn" class="btn" onclick="disconnectWallet()" style="display: none; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Desconectar</button>
                 </div>
             </div>
             <div style="margin-top: 15px; text-align: center;">
-                <span class="network-badge">📡 Red: Sepolia Testnet</span>
+                <span class="network-badge" id="currentNetwork">📡 Red: Sepolia Testnet</span>
+            </div>
+        </div>
+
+        <!-- Chain Selector -->
+        <div class="wallet-section" style="margin-top: 20px;">
+            <h2 style="color: #333; margin-bottom: 15px;">⛓️ Seleccionar Blockchain</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Este sistema soporta <strong>15 blockchains</strong> diferentes. Selecciona la que prefieras:
+            </p>
+
+            <div class="chain-selector">
+                <div class="chain-category">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">🧪 Testnets (Recomendado para testing)</h3>
+                    <div class="chain-options">
+                        <div class="chain-option" onclick="selectChain('sepolia')">
+                            <div class="chain-icon">🔵</div>
+                            <div class="chain-info">
+                                <strong>Sepolia</strong>
+                                <small>Ethereum Testnet (actual)</small>
+                            </div>
+                            <div class="chain-badge">✅ Activa</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔷</div>
+                            <div class="chain-info">
+                                <strong>Base Sepolia</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🟣</div>
+                            <div class="chain-info">
+                                <strong>Polygon Amoy</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔴</div>
+                            <div class="chain-info">
+                                <strong>Optimism Sepolia</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔺</div>
+                            <div class="chain-info">
+                                <strong>Avalanche Fuji</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🟡</div>
+                            <div class="chain-info">
+                                <strong>Celo Alfajores</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chain-category" style="margin-top: 20px;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🌐 Mainnets (Producción)</h3>
+                    <div class="chain-options">
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔷</div>
+                            <div class="chain-info">
+                                <strong>Base</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🟣</div>
+                            <div class="chain-info">
+                                <strong>Polygon</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔴</div>
+                            <div class="chain-info">
+                                <strong>Optimism</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔺</div>
+                            <div class="chain-info">
+                                <strong>Avalanche</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🟡</div>
+                            <div class="chain-info">
+                                <strong>Celo</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chain-category" style="margin-top: 20px;">
+                    <h3 style="color: #9945FF; margin-bottom: 10px;">⚡ Solana</h3>
+                    <div class="chain-options">
+                        <div class="chain-option disabled" title="Requiere wallet de Solana">
+                            <div class="chain-icon">⚡</div>
+                            <div class="chain-info">
+                                <strong>Solana Devnet</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere wallet de Solana">
+                            <div class="chain-icon">⚡</div>
+                            <div class="chain-info">
+                                <strong>Solana Mainnet</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #0ea5e9;">
+                <strong style="color: #0c4a6e;">ℹ️ Información:</strong>
+                <p style="color: #075985; margin-top: 8px; margin-bottom: 0;">
+                    • <strong>Actualmente activa:</strong> Sepolia (contratos desplegados)<br>
+                    • <strong>⚡ x402 Gasless:</strong> Sin fees de gas para usuarios<br>
+                    • <strong>13 chains con x402:</strong> Base, Polygon, Optimism, Avalanche, Celo, HyperEVM, Solana<br>
+                    • <strong>Próximamente:</strong> Selector de chain dinámico con switch automático
+                </p>
             </div>
         </div>
 
@@ -619,6 +837,92 @@
         let provider = null;
         let signer = null;
         let userAddress = null;
+        let currentChainId = 11155111; // Default: Sepolia
+
+        // Chain configurations with RPC endpoints
+        const CHAIN_CONFIGS = {
+            // Testnets
+            sepolia: {
+                chainId: '0xaa36a7', // 11155111
+                chainName: 'Sepolia',
+                rpcUrls: ['https://rpc.sepolia.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+                active: true
+            },
+            baseSepolia: {
+                chainId: '0x14a34', // 84532
+                chainName: 'Base Sepolia',
+                rpcUrls: ['https://sepolia.base.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.basescan.org'],
+                usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+                active: false
+            },
+            polygonAmoy: {
+                chainId: '0x13882', // 80002
+                chainName: 'Polygon Amoy',
+                rpcUrls: ['https://rpc-amoy.polygon.technology'],
+                nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                blockExplorerUrls: ['https://amoy.polygonscan.com'],
+                usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+                active: false
+            },
+            optimismSepolia: {
+                chainId: '0xaa37dc', // 11155420
+                chainName: 'Optimism Sepolia',
+                rpcUrls: ['https://sepolia.optimism.io'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia-optimism.etherscan.io'],
+                active: false
+            },
+            arbitrumSepolia: {
+                chainId: '0x66eee', // 421614
+                chainName: 'Arbitrum Sepolia',
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.arbiscan.io'],
+                active: false
+            },
+            // Mainnets
+            base: {
+                chainId: '0x2105', // 8453
+                chainName: 'Base',
+                rpcUrls: ['https://mainnet.base.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://basescan.org'],
+                usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+                active: false
+            },
+            polygon: {
+                chainId: '0x89', // 137
+                chainName: 'Polygon',
+                rpcUrls: ['https://polygon-rpc.com'],
+                nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                blockExplorerUrls: ['https://polygonscan.com'],
+                usdcAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+                active: false
+            },
+            optimism: {
+                chainId: '0xa', // 10
+                chainName: 'Optimism',
+                rpcUrls: ['https://mainnet.optimism.io'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://optimistic.etherscan.io'],
+                usdcAddress: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+                active: false
+            },
+            avalanche: {
+                chainId: '0xa86a', // 43114
+                chainName: 'Avalanche C-Chain',
+                rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+                nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 18 },
+                blockExplorerUrls: ['https://snowtrace.io'],
+                usdcAddress: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+                active: false
+            }
+        };
 
         // ABIs
         const PAYMENT_PROCESSOR_ABI = [
@@ -725,8 +1029,10 @@
                 }
 
                 document.getElementById('walletAddress').textContent = userAddress;
-                document.getElementById('connectBtn').textContent = '✓ Conectado';
-                document.getElementById('connectBtn').classList.add('success');
+
+                // Toggle buttons: hide Connect, show Disconnect
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('disconnectBtn').style.display = 'inline-block';
 
                 await updateBalances();
 
@@ -1024,12 +1330,179 @@
             statusDiv.style.display = 'block';
         }
 
+        // Wallet disconnection detection
+        function setupWalletListeners() {
+            if (typeof window.ethereum !== 'undefined') {
+                // Detect account changes
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    console.log('Accounts changed:', accounts);
+                    if (accounts.length === 0) {
+                        // Wallet disconnected
+                        handleWalletDisconnection();
+                    } else {
+                        // Account switched - reconnect
+                        location.reload();
+                    }
+                });
+
+                // Detect chain changes
+                window.ethereum.on('chainChanged', (chainId) => {
+                    console.log('Chain changed to:', chainId);
+                    location.reload();
+                });
+
+                // Detect wallet disconnect
+                window.ethereum.on('disconnect', () => {
+                    console.log('Wallet disconnected');
+                    handleWalletDisconnection();
+                });
+            }
+        }
+
+        function handleWalletDisconnection() {
+            provider = null;
+            signer = null;
+            userAddress = null;
+
+            // Reset UI
+            document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
+            document.getElementById('usdcBalance').textContent = '0';
+            document.getElementById('ethBalance').textContent = '0';
+            document.getElementById('networkBadge').textContent = 'No conectada';
+
+            // Toggle buttons
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('disconnectBtn').style.display = 'none';
+
+            // Show reconnection message
+            showStatus('approveStatus',
+                '⚠️ <strong>Wallet Desconectada</strong><br><br>' +
+                'Tu wallet se ha desconectado. Por favor:<br>' +
+                '1. Conecta tu wallet nuevamente<br>' +
+                '2. O recarga la página para reconectar<br><br>' +
+                '<button onclick="connectWallet()" class="btn" style="margin-top: 10px;">Reconectar Wallet</button>',
+                'warning');
+
+            // Disable all agent buttons
+            const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = true;
+            });
+
+            console.log('✓ Wallet disconnection handled');
+        }
+
+        // Manual disconnect function
+        function disconnectWallet() {
+            console.log('Manual wallet disconnect requested');
+
+            // Clear local state
+            provider = null;
+            signer = null;
+            userAddress = null;
+
+            // Reset UI
+            document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
+            document.getElementById('usdcBalance').textContent = '0';
+            document.getElementById('ethBalance').textContent = '0';
+            document.getElementById('networkBadge').textContent = 'No conectada';
+
+            // Toggle buttons
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('disconnectBtn').style.display = 'none';
+
+            // Clear all status messages
+            const statusDivs = ['approveStatus', 'weatherStatus', 'fashionStatus', 'activitiesStatus'];
+            statusDivs.forEach(id => {
+                const div = document.getElementById(id);
+                if (div) div.style.display = 'none';
+            });
+
+            // Disable all agent buttons
+            const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = true;
+            });
+
+            // Show disconnection confirmation
+            showStatus('approveStatus',
+                '✅ <strong>Wallet Desconectada Exitosamente</strong><br><br>' +
+                'Has desconectado tu wallet de forma segura.<br>' +
+                'Conecta nuevamente cuando quieras usar los agentes.',
+                'success');
+
+            console.log('✓ Wallet manually disconnected');
+        }
+
+        // Chain switching function
+        async function selectChain(chainKey) {
+            const chainConfig = CHAIN_CONFIGS[chainKey];
+
+            if (!chainConfig) {
+                alert('Configuración de chain no encontrada');
+                return;
+            }
+
+            if (!chainConfig.active) {
+                alert(`⚠️ ${chainConfig.chainName} estará disponible próximamente.\n\nPor ahora solo Sepolia está activa para pruebas.`);
+                return;
+            }
+
+            if (!window.ethereum) {
+                alert('Por favor conecta tu wallet primero');
+                return;
+            }
+
+            try {
+                // Try to switch to the chain
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: chainConfig.chainId }],
+                });
+
+                console.log(`Switched to ${chainConfig.chainName}`);
+                location.reload();
+
+            } catch (switchError) {
+                // Chain not added to wallet, try to add it
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: chainConfig.chainId,
+                                chainName: chainConfig.chainName,
+                                rpcUrls: chainConfig.rpcUrls,
+                                nativeCurrency: chainConfig.nativeCurrency,
+                                blockExplorerUrls: chainConfig.blockExplorerUrls
+                            }],
+                        });
+
+                        console.log(`Added and switched to ${chainConfig.chainName}`);
+                        location.reload();
+
+                    } catch (addError) {
+                        console.error('Error adding chain:', addError);
+                        alert(`Error agregando ${chainConfig.chainName}: ${addError.message}`);
+                    }
+                } else {
+                    console.error('Error switching chain:', switchError);
+                    alert(`Error cambiando a ${chainConfig.chainName}: ${switchError.message}`);
+                }
+            }
+        }
+
         // Check on load
         window.addEventListener('load', () => {
             console.log('=== Sistema cargado ===');
             console.log('ethers.js:', typeof ethers !== 'undefined' ? 'OK ✓' : 'ERROR ✗');
             console.log('window.ethereum:', typeof window.ethereum !== 'undefined' ? 'Detectado ✓' : 'No detectado ✗');
             console.log('Protocolo:', window.location.protocol);
+
+            // Setup wallet event listeners
+            setupWalletListeners();
 
             // Advertencia sobre file://
             if (window.location.protocol === 'file:') {

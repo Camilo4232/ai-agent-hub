@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Agent Hub - Multi-Chain Payment Platform</title>
+    <title>AI Agent Hub - Blockchain Integration</title>
+    <script src="ethers-5.7.2.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,226 +13,450 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            padding: 20px;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
         }
 
-        header {
+        .header {
             text-align: center;
             color: white;
-            padding: 40px 20px;
+            margin-bottom: 30px;
         }
 
-        header h1 {
-            font-size: 3.5em;
+        .header h1 {
+            font-size: 2.8em;
             margin-bottom: 10px;
-            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        header p {
-            font-size: 1.3em;
+        .header p {
+            font-size: 1.2em;
             opacity: 0.95;
-            margin-bottom: 20px;
         }
 
-        .badges {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
+        /* Wallet Section */
+        .wallet-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
 
-        .badge {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .wallet-item h3 {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .wallet-address {
+            font-family: 'Courier New', monospace;
+            background: #f0f0f0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            word-break: break-all;
+        }
+
+        .balance-display {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        /* Network Info */
+        .network-badge {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.9em;
-            backdrop-filter: blur(10px);
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
-        }
-
-        .card h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-        }
-
-        .card p {
-            color: #666;
-            line-height: 1.8;
-            margin-bottom: 20px;
-        }
-
-        .price {
-            font-size: 2em;
-            color: #10b981;
-            font-weight: 700;
-            margin: 15px 0;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 14px 28px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
             font-weight: 600;
-            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        /* Buttons */
+        .btn {
+            background: #667eea;
+            color: white;
             border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 1em;
-            width: 100%;
-            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .features {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            margin-top: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .btn.success {
+            background: #10b981;
         }
 
-        .features h2 {
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.2em;
+        .btn.success:hover {
+            background: #059669;
         }
 
-        .feature-grid {
+        .btn.small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        /* Agent Cards */
+        .agents-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 25px;
-            margin-top: 30px;
+            margin-bottom: 25px;
         }
 
-        .feature-item {
-            padding: 20px;
+        .agent-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .agent-icon {
+            font-size: 3em;
+            margin-right: 15px;
+        }
+
+        .agent-title h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .agent-title p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .price-breakdown {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+
+        .price-breakdown div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .price-breakdown .total {
+            border-top: 2px solid #667eea;
+            margin-top: 8px;
+            padding-top: 8px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
             border: 2px solid #e0e0e0;
-            border-radius: 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Chain Selector */
+        .chain-selector {
+            margin-top: 15px;
+        }
+
+        .chain-category {
+            margin-bottom: 20px;
+        }
+
+        .chain-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .chain-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            cursor: pointer;
             transition: all 0.3s;
         }
 
-        .feature-item:hover {
+        .chain-option:hover:not(.disabled) {
             border-color: #667eea;
             background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
 
-        .feature-item h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1.3em;
+        .chain-option.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #f9fafb;
         }
 
-        .feature-item p {
-            color: #666;
-            line-height: 1.6;
+        .chain-icon {
+            font-size: 2em;
+            line-height: 1;
         }
 
-        .icon {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .chain-info {
+            flex: 1;
         }
 
-        .status-banner {
-            background: rgba(16, 185, 129, 0.1);
-            border-left: 4px solid #10b981;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            color: #059669;
-            font-weight: 600;
+        .chain-info strong {
+            display: block;
+            color: #1f2937;
+            font-size: 1.05em;
+            margin-bottom: 2px;
         }
 
-        .chain-support {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            margin-top: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .chain-support h2 {
-            color: #667eea;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 2.2em;
-        }
-
-        .chains {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 20px;
+        .chain-info small {
+            color: #6b7280;
+            font-size: 0.85em;
         }
 
         .chain-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #10b981;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
             font-weight: 600;
-            font-size: 0.95em;
+            white-space: nowrap;
         }
 
-        footer {
-            text-align: center;
-            color: white;
-            padding: 30px;
-            margin-top: 50px;
+        .chain-option.disabled .chain-badge {
+            background: #9ca3af;
         }
 
-        footer a {
-            color: white;
+        /* Response Area */
+        .response-area {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            min-height: 100px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        /* Status Messages */
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 16px rgba(0,0,0,0.2), 0 0 0 0 rgba(245, 158, 11, 0.7);
+            }
+            50% {
+                box-shadow: 0 8px 16px rgba(0,0,0,0.2), 0 0 0 10px rgba(245, 158, 11, 0);
+            }
+        }
+
+        /* Transaction Link */
+        .tx-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .tx-link:hover {
             text-decoration: underline;
         }
 
+        /* Info Box */
+        .info-box {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .info-box h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #78350f;
+        }
+
+        .info-box li {
+            margin: 5px 0;
+        }
+
+        /* Contract Info */
+        .contracts-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .contracts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .contract-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .contract-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .contract-item a {
+            color: #666;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            word-break: break-all;
+            text-decoration: none;
+        }
+
+        .contract-item a:hover {
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 2.5em;
+            .wallet-grid {
+                grid-template-columns: 1fr;
             }
 
-            .main-content {
+            .agents-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -239,134 +464,1071 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🤖 AI Agent Hub</h1>
-            <p>Multi-Chain AI Agent Marketplace with Gasless Payments</p>
-            <div class="badges">
-                <span class="badge">✅ Live on Production</span>
-                <span class="badge">⛓️ 13+ Blockchains</span>
-                <span class="badge">💰 Gasless Payments</span>
-                <span class="badge">🚀 ERC-8004 & X402</span>
-            </div>
-            <div class="status-banner" style="max-width: 600px; margin: 20px auto; background: rgba(255,255,255,0.2); color: white; border-color: white;">
-                ✨ System Status: All Services Operational
-            </div>
-        </header>
+        <div class="header">
+            <h1>⛓️ AI Agent Hub - Blockchain</h1>
+            <p>Pagos Reales on-chain con USDC en Sepolia Testnet</p>
+        </div>
 
-        <div class="main-content">
+        <!-- Wallet Section -->
+        <div class="wallet-section">
+            <div class="wallet-grid">
+                <div class="wallet-item">
+                    <h3>🔐 Tu Wallet</h3>
+                    <div id="walletAddress" class="wallet-address">No conectada - Haz clic en "Conectar Wallet"</div>
+                </div>
+                <div class="wallet-item">
+                    <h3>💰 Balance ETH</h3>
+                    <div id="ethBalance" class="balance-display">0.00</div>
+                </div>
+                <div class="wallet-item">
+                    <h3>💵 Balance USDC</h3>
+                    <div id="usdcBalance" class="balance-display">0.00</div>
+                </div>
+                <div class="wallet-item">
+                    <button id="connectBtn" class="btn" onclick="connectWallet()">Conectar Wallet</button>
+                    <button id="disconnectBtn" class="btn" onclick="disconnectWallet()" style="display: none; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Desconectar</button>
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <span class="network-badge" id="currentNetwork">📡 Red: Sepolia Testnet</span>
+            </div>
+        </div>
+
+        <!-- Chain Selector -->
+        <div class="wallet-section" style="margin-top: 20px;">
+            <h2 style="color: #333; margin-bottom: 15px;">⛓️ Seleccionar Blockchain</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Este sistema soporta <strong>15 blockchains</strong> diferentes. Selecciona la que prefieras:
+            </p>
+
+            <div class="chain-selector">
+                <div class="chain-category">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">🧪 Testnets (Recomendado para testing)</h3>
+                    <div class="chain-options">
+                        <div class="chain-option" onclick="selectChain('sepolia')">
+                            <div class="chain-icon">🔵</div>
+                            <div class="chain-info">
+                                <strong>Sepolia</strong>
+                                <small>Ethereum Testnet (actual)</small>
+                            </div>
+                            <div class="chain-badge">✅ Activa</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔷</div>
+                            <div class="chain-info">
+                                <strong>Base Sepolia</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🟣</div>
+                            <div class="chain-info">
+                                <strong>Polygon Amoy</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔴</div>
+                            <div class="chain-info">
+                                <strong>Optimism Sepolia</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🔺</div>
+                            <div class="chain-info">
+                                <strong>Avalanche Fuji</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Próximamente">
+                            <div class="chain-icon">🟡</div>
+                            <div class="chain-info">
+                                <strong>Celo Alfajores</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chain-category" style="margin-top: 20px;">
+                    <h3 style="color: #10b981; margin-bottom: 10px;">🌐 Mainnets (Producción)</h3>
+                    <div class="chain-options">
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔷</div>
+                            <div class="chain-info">
+                                <strong>Base</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🟣</div>
+                            <div class="chain-info">
+                                <strong>Polygon</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔴</div>
+                            <div class="chain-info">
+                                <strong>Optimism</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🔺</div>
+                            <div class="chain-info">
+                                <strong>Avalanche</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere configuración adicional">
+                            <div class="chain-icon">🟡</div>
+                            <div class="chain-info">
+                                <strong>Celo</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">⚙️ Config</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chain-category" style="margin-top: 20px;">
+                    <h3 style="color: #9945FF; margin-bottom: 10px;">⚡ Solana</h3>
+                    <div class="chain-options">
+                        <div class="chain-option disabled" title="Requiere wallet de Solana">
+                            <div class="chain-icon">⚡</div>
+                            <div class="chain-info">
+                                <strong>Solana Devnet</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                        <div class="chain-option disabled" title="Requiere wallet de Solana">
+                            <div class="chain-icon">⚡</div>
+                            <div class="chain-info">
+                                <strong>Solana Mainnet</strong>
+                                <small>x402 Gasless ⚡</small>
+                            </div>
+                            <div class="chain-badge">🔜 Próximamente</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #e0f2fe; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #0ea5e9;">
+                <strong style="color: #0c4a6e;">ℹ️ Información:</strong>
+                <p style="color: #075985; margin-top: 8px; margin-bottom: 0;">
+                    • <strong>Actualmente activa:</strong> Sepolia (contratos desplegados)<br>
+                    • <strong>⚡ x402 Gasless:</strong> Sin fees de gas para usuarios<br>
+                    • <strong>13 chains con x402:</strong> Base, Polygon, Optimism, Avalanche, Celo, HyperEVM, Solana<br>
+                    • <strong>Próximamente:</strong> Selector de chain dinámico con switch automático
+                </p>
+            </div>
+        </div>
+
+        <!-- Contracts Info -->
+        <div class="contracts-section">
+            <h2 style="color: #333; margin-bottom: 15px;">📜 Contratos Desplegados</h2>
+            <div class="contracts-grid">
+                <div class="contract-item">
+                    <h4>PaymentProcessor</h4>
+                    <a href="https://sepolia.etherscan.io/address/0x231eA77d88603F40C48Ad98f085F5646523bCe74" target="_blank">
+                        0x231eA77d88603F40C48Ad98f085F5646523bCe74
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <h4>AgentRegistry</h4>
+                    <a href="https://sepolia.etherscan.io/address/0x22265732666ea19B72627593Ff515f5a37b0dc77" target="_blank">
+                        0x22265732666ea19B72627593Ff515f5a37b0dc77
+                    </a>
+                </div>
+                <div class="contract-item">
+                    <h4>USDC (Sepolia)</h4>
+                    <a href="https://sepolia.etherscan.io/address/0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" target="_blank">
+                        0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+            <h3>💡 Cómo usar este sistema:</h3>
+            <ul>
+                <li><strong>1.</strong> Conecta tu wallet EVM (MetaMask, Coinbase, Rainbow, etc.) - asegúrate de estar en Sepolia testnet</li>
+                <li><strong>2.</strong> Obtén Sepolia ETH (para gas): <a href="https://sepoliafaucet.com/" target="_blank">sepoliafaucet.com</a></li>
+                <li><strong>3.</strong> Obtén Sepolia USDC: <a href="https://faucet.circle.com/" target="_blank">faucet.circle.com</a></li>
+                <li><strong>4.</strong> Aprueba USDC para el PaymentProcessor (botón "Aprobar USDC")</li>
+                <li><strong>5.</strong> Selecciona un agente, crea el pago y consulta!</li>
+            </ul>
+        </div>
+
+        <!-- USDC Approval -->
+        <div class="wallet-section" id="approveSection">
+            <h2 style="color: #333; margin-bottom: 15px;">✅ Paso IMPORTANTE: Aprobar USDC</h2>
+            <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #f59e0b;">
+                <strong style="color: #92400e;">⚠️ DEBES hacer esto ANTES de pagar:</strong>
+                <p style="color: #78350f; margin-top: 8px; margin-bottom: 0;">
+                    Los contratos inteligentes necesitan tu permiso para mover tus USDC.
+                    Esto es una transacción separada que solo haces una vez.
+                </p>
+            </div>
+            <p style="margin-bottom: 15px; color: #666;">
+                <strong>¿Cuánto aprobar?</strong> Aprueba suficiente USDC para todos los pagos que planeas hacer.
+                Por ejemplo: Si apruebas 1 USDC, podrás hacer ~100 consultas al Weather Agent (0.001 USDC cada una).
+            </p>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label>Cantidad a aprobar (USDC):</label>
+                    <input type="number" id="approveAmount" value="1" step="0.001" placeholder="1.000" min="0.001">
+                </div>
+                <button class="btn success" onclick="approveUSDC()" id="approveBtn" style="margin-top: 24px;">
+                    💳 Aprobar USDC
+                </button>
+            </div>
+            <div id="approveStatus"></div>
+        </div>
+
+        <!-- Agents Grid -->
+        <div class="agents-grid">
             <!-- Weather Agent -->
-            <div class="card">
-                <div class="icon">🌤️</div>
-                <h2>Weather Agent</h2>
-                <p>Get real-time weather information for any city worldwide with AI-powered insights.</p>
-                <div class="price">0.001 USDC</div>
-                <p style="font-size: 0.9em; color: #999;">per query</p>
-                <a href="/web3" class="btn">Query Agent</a>
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-icon">🌤️</div>
+                    <div class="agent-title">
+                        <h2>Weather Agent</h2>
+                        <p>Datos meteorológicos en tiempo real</p>
+                    </div>
+                </div>
+
+                <div class="price-tag">0.001 USDC por consulta</div>
+
+                <div class="form-group">
+                    <label>Selecciona una ciudad:</label>
+                    <select id="weatherCity">
+                        <option value="tokyo">Tokyo 🇯🇵</option>
+                        <option value="new york">New York 🇺🇸</option>
+                        <option value="london">London 🇬🇧</option>
+                        <option value="paris">Paris 🇫🇷</option>
+                        <option value="miami">Miami 🌴</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="queryWeatherAgent()" id="weatherBtn" style="width: 100%;">
+                    💳 Pagar y Consultar
+                </button>
+
+                <div id="weatherStatus"></div>
+                <div id="weatherResponse" class="response-area" style="display: none;"></div>
             </div>
 
             <!-- Fashion Agent -->
-            <div class="card">
-                <div class="icon">👗</div>
-                <h2>Fashion Agent</h2>
-                <p>AI-powered fashion recommendations based on weather, location, and current trends.</p>
-                <div class="price">0.003 USDC</div>
-                <p style="font-size: 0.9em; color: #999;">per query</p>
-                <a href="/web3" class="btn">Query Agent</a>
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-icon">👔</div>
+                    <div class="agent-title">
+                        <h2>Fashion Agent</h2>
+                        <p>Recomendaciones de moda según clima</p>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div><span>Fashion Agent</span><span>0.002 USDC</span></div>
+                    <div><span>+ Weather Agent</span><span>0.001 USDC</span></div>
+                    <div class="total"><span>Total</span><span>0.003 USDC</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Selecciona una ciudad:</label>
+                    <select id="fashionCity">
+                        <option value="paris">Paris 🇫🇷</option>
+                        <option value="london">London 🇬🇧</option>
+                        <option value="new york">New York 🇺🇸</option>
+                        <option value="tokyo">Tokyo 🇯🇵</option>
+                        <option value="miami">Miami 🌴</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="queryFashionAgent()" id="fashionBtn" style="width: 100%;">
+                    💳 Pagar y Consultar
+                </button>
+
+                <div id="fashionStatus"></div>
+                <div id="fashionResponse" class="response-area" style="display: none;"></div>
             </div>
 
             <!-- Activities Agent -->
-            <div class="card">
-                <div class="icon">🎯</div>
-                <h2>Activities Agent</h2>
-                <p>Complete day itinerary planning with weather-aware activity recommendations.</p>
-                <div class="price">0.008 USDC</div>
-                <p style="font-size: 0.9em; color: #999;">per query</p>
-                <a href="/web3" class="btn">Query Agent</a>
+            <div class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-icon">🎯</div>
+                    <div class="agent-title">
+                        <h2>Activities Agent</h2>
+                        <p>Plan completo del día</p>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div><span>Activities Agent</span><span>0.005 USDC</span></div>
+                    <div><span>+ Fashion Agent</span><span>0.002 USDC</span></div>
+                    <div><span>+ Weather Agent</span><span>0.001 USDC</span></div>
+                    <div class="total"><span>Total</span><span>0.008 USDC</span></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Selecciona una ciudad:</label>
+                    <select id="activitiesCity">
+                        <option value="miami">Miami 🌴</option>
+                        <option value="tokyo">Tokyo 🇯🇵</option>
+                        <option value="paris">Paris 🇫🇷</option>
+                        <option value="new york">New York 🇺🇸</option>
+                        <option value="london">London 🇬🇧</option>
+                    </select>
+                </div>
+
+                <button class="btn" onclick="queryActivitiesAgent()" id="activitiesBtn" style="width: 100%;">
+                    💳 Pagar y Consultar
+                </button>
+
+                <div id="activitiesStatus"></div>
+                <div id="activitiesResponse" class="response-area" style="display: none;"></div>
             </div>
         </div>
-
-        <!-- Features Section -->
-        <div class="features">
-            <h2>🚀 Platform Features</h2>
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <div class="icon">⛓️</div>
-                    <h3>Multi-Chain Support</h3>
-                    <p>Pay with USDC on 13+ blockchains including Base, Polygon, Optimism, Avalanche, and more.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="icon">💸</div>
-                    <h3>Zero Gas Fees</h3>
-                    <p>X402 protocol enables gasless transactions. Users pay only for agent services.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="icon">⚡</div>
-                    <h3>2-3 Second Settlement</h3>
-                    <p>Lightning-fast payment confirmation with EIP-3009 meta-transactions.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="icon">🔒</div>
-                    <h3>Fully Trustless</h3>
-                    <p>Smart contract verification ensures secure, on-chain payment processing.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="icon">🤝</div>
-                    <h3>A2A Protocol</h3>
-                    <p>Agents communicate and collaborate to provide comprehensive responses.</p>
-                </div>
-                <div class="feature-item">
-                    <div class="icon">📊</div>
-                    <h3>Real-Time Analytics</h3>
-                    <p>Complete transparency with on-chain verification and performance metrics.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chain Support -->
-        <div class="chain-support">
-            <h2>⛓️ Supported Blockchains</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 20px;">
-                Pay with USDC on any of these networks
-            </p>
-            <div class="chains">
-                <span class="chain-badge">Base</span>
-                <span class="chain-badge">Polygon</span>
-                <span class="chain-badge">Optimism</span>
-                <span class="chain-badge">Avalanche</span>
-                <span class="chain-badge">Celo</span>
-                <span class="chain-badge">Solana</span>
-                <span class="chain-badge">HyperEVM</span>
-                <span class="chain-badge">+ 6 Testnets</span>
-            </div>
-            <div style="text-align: center; margin-top: 30px;">
-                <a href="/web3" class="btn" style="max-width: 300px; margin: 0 auto;">
-                    Connect Wallet & Start
-                </a>
-            </div>
-        </div>
-
-        <!-- Quick Links -->
-        <div class="features" style="margin-top: 30px;">
-            <h2>📚 Quick Links</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                <a href="/api/status" class="btn">API Status</a>
-                <a href="/health" class="btn btn-secondary">Health Check</a>
-                <a href="https://github.com/Camilo4232/ai-agent-hub" target="_blank" class="btn">GitHub Repository</a>
-                <a href="https://facilitator.ultravioletadao.xyz/" target="_blank" class="btn btn-secondary">X402 Facilitator</a>
-            </div>
-        </div>
-
-        <footer>
-            <p>
-                Built with ❤️ using ERC-8004 & X402 protocols<br>
-                <a href="https://sepolia.etherscan.io/address/0x97CA3e550b7b6091A652645e89f98946Cda5Ac08" target="_blank">
-                    View Smart Contracts on Sepolia
-                </a>
-            </p>
-            <p style="margin-top: 15px; opacity: 0.8;">
-                AI Agent Hub v2.2 - Production Ready
-            </p>
-        </footer>
     </div>
+
+    <script>
+        // Configuration
+        const CONTRACTS = {
+            paymentProcessor: '0x231eA77d88603F40C48Ad98f085F5646523bCe74',
+            agentRegistry: '0x22265732666ea19B72627593Ff515f5a37b0dc77',
+            usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
+        };
+
+        // Use relative URLs so it works both locally and in production
+        const BASE_URL = window.location.origin;
+
+        const AGENTS = {
+            weather: {
+                address: '0x1111111111111111111111111111111111111111',
+                endpoint: `${BASE_URL}/api/agents/weather/query`,
+                price: '0.001'
+            },
+            fashion: {
+                address: '0x2222222222222222222222222222222222222222',
+                endpoint: `${BASE_URL}/api/agents/fashion/query`,
+                price: '0.003'
+            },
+            activities: {
+                address: '0x3333333333333333333333333333333333333333',
+                endpoint: `${BASE_URL}/api/agents/activities/query`,
+                price: '0.008'
+            }
+        };
+
+        let provider = null;
+        let signer = null;
+        let userAddress = null;
+        let currentChainId = 11155111; // Default: Sepolia
+
+        // Chain configurations with RPC endpoints
+        const CHAIN_CONFIGS = {
+            // Testnets
+            sepolia: {
+                chainId: '0xaa36a7', // 11155111
+                chainName: 'Sepolia',
+                rpcUrls: ['https://rpc.sepolia.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.etherscan.io'],
+                usdcAddress: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+                active: true
+            },
+            baseSepolia: {
+                chainId: '0x14a34', // 84532
+                chainName: 'Base Sepolia',
+                rpcUrls: ['https://sepolia.base.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.basescan.org'],
+                usdcAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+                active: false
+            },
+            polygonAmoy: {
+                chainId: '0x13882', // 80002
+                chainName: 'Polygon Amoy',
+                rpcUrls: ['https://rpc-amoy.polygon.technology'],
+                nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                blockExplorerUrls: ['https://amoy.polygonscan.com'],
+                usdcAddress: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582',
+                active: false
+            },
+            optimismSepolia: {
+                chainId: '0xaa37dc', // 11155420
+                chainName: 'Optimism Sepolia',
+                rpcUrls: ['https://sepolia.optimism.io'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia-optimism.etherscan.io'],
+                active: false
+            },
+            arbitrumSepolia: {
+                chainId: '0x66eee', // 421614
+                chainName: 'Arbitrum Sepolia',
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.arbiscan.io'],
+                active: false
+            },
+            // Mainnets
+            base: {
+                chainId: '0x2105', // 8453
+                chainName: 'Base',
+                rpcUrls: ['https://mainnet.base.org'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://basescan.org'],
+                usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+                active: false
+            },
+            polygon: {
+                chainId: '0x89', // 137
+                chainName: 'Polygon',
+                rpcUrls: ['https://polygon-rpc.com'],
+                nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+                blockExplorerUrls: ['https://polygonscan.com'],
+                usdcAddress: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
+                active: false
+            },
+            optimism: {
+                chainId: '0xa', // 10
+                chainName: 'Optimism',
+                rpcUrls: ['https://mainnet.optimism.io'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://optimistic.etherscan.io'],
+                usdcAddress: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85',
+                active: false
+            },
+            avalanche: {
+                chainId: '0xa86a', // 43114
+                chainName: 'Avalanche C-Chain',
+                rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
+                nativeCurrency: { name: 'AVAX', symbol: 'AVAX', decimals: 18 },
+                blockExplorerUrls: ['https://snowtrace.io'],
+                usdcAddress: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+                active: false
+            }
+        };
+
+        // ABIs
+        const PAYMENT_PROCESSOR_ABI = [
+            "function createPaymentUSDC(string paymentId, address agent, uint256 amount, string serviceId)",
+            "function verifyPayment(string paymentId) view returns (bool)"
+        ];
+
+        const USDC_ABI = [
+            "function balanceOf(address) view returns (uint256)",
+            "function approve(address spender, uint256 amount) returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)",
+            "function decimals() view returns (uint8)"
+        ];
+
+        async function connectWallet() {
+            console.log('connectWallet() llamado');
+
+            // Detectar cualquier proveedor EVM compatible
+            if (typeof window.ethereum === 'undefined') {
+                showStatus('approveStatus',
+                    '❌ No se detectó ninguna wallet EVM.<br><br>' +
+                    'Instala una wallet compatible:<br>' +
+                    '• <a href="https://metamask.io" target="_blank" class="tx-link">MetaMask</a><br>' +
+                    '• <a href="https://www.coinbase.com/wallet" target="_blank" class="tx-link">Coinbase Wallet</a><br>' +
+                    '• <a href="https://rainbow.me" target="_blank" class="tx-link">Rainbow</a><br>' +
+                    '• O cualquier wallet compatible con EVM',
+                    'error');
+                return;
+            }
+
+            if (typeof ethers === 'undefined') {
+                alert('Error: ethers.js no está cargado. Por favor recarga la página.');
+                return;
+            }
+
+            try {
+                // Detectar el nombre de la wallet si está disponible
+                const walletName = window.ethereum.isMetaMask ? 'MetaMask' :
+                                 window.ethereum.isCoinbaseWallet ? 'Coinbase Wallet' :
+                                 window.ethereum.isRabby ? 'Rabby' :
+                                 window.ethereum.isBraveWallet ? 'Brave Wallet' :
+                                 'Wallet EVM';
+
+                console.log('Wallet detectada:', walletName);
+                console.log('Solicitando cuentas...');
+                showStatus('approveStatus', `Conectando a ${walletName}...`, 'info');
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                console.log('Cuentas obtenidas:', accounts);
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                console.log('Dirección del usuario:', userAddress);
+
+                // Check network
+                const network = await provider.getNetwork();
+                console.log('Red:', network);
+
+                if (network.chainId !== 11155111) {
+                    showStatus('approveStatus',
+                        `⚠️ Red incorrecta detectada (Chain ID: ${network.chainId}).<br>` +
+                        `Por favor cambia a Sepolia testnet en tu wallet.`,
+                        'error');
+
+                    // Intentar cambiar a Sepolia automáticamente
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }], // 11155111 en hex
+                        });
+                        // Si tiene éxito, volver a intentar la conexión
+                        setTimeout(() => connectWallet(), 1000);
+                    } catch (switchError) {
+                        // Si la red no existe, intentar agregarla
+                        if (switchError.code === 4902) {
+                            try {
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: '0xaa36a7',
+                                        chainName: 'Sepolia Testnet',
+                                        nativeCurrency: {
+                                            name: 'Sepolia ETH',
+                                            symbol: 'ETH',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://rpc.sepolia.org'],
+                                        blockExplorerUrls: ['https://sepolia.etherscan.io']
+                                    }]
+                                });
+                                setTimeout(() => connectWallet(), 1000);
+                            } catch (addError) {
+                                console.error('Error al agregar la red:', addError);
+                                showStatus('approveStatus',
+                                    '❌ No se pudo agregar la red Sepolia. Por favor agrégala manualmente.',
+                                    'error');
+                            }
+                        } else {
+                            console.error('Error al cambiar de red:', switchError);
+                        }
+                    }
+                    return;
+                }
+
+                document.getElementById('walletAddress').textContent = userAddress;
+
+                // Toggle buttons: hide Connect, show Disconnect
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('disconnectBtn').style.display = 'inline-block';
+
+                await updateBalances();
+
+                showStatus('approveStatus', `✅ ${walletName} conectada exitosamente!`, 'success');
+
+                // Escuchar cambios de cuenta y red
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    if (accounts.length === 0) {
+                        console.log('Wallet desconectada');
+                        location.reload();
+                    } else {
+                        console.log('Cuenta cambiada');
+                        location.reload();
+                    }
+                });
+
+                window.ethereum.on('chainChanged', (chainId) => {
+                    console.log('Red cambiada:', chainId);
+                    location.reload();
+                });
+
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+
+                let errorMessage = '❌ Error: ';
+                if (error.code === 4001) {
+                    errorMessage += 'Conexión rechazada por el usuario';
+                } else if (error.code === -32002) {
+                    errorMessage += 'Ya hay una solicitud de conexión pendiente. Revisa tu wallet.';
+                } else {
+                    errorMessage += error.message;
+                }
+
+                showStatus('approveStatus', errorMessage, 'error');
+            }
+        }
+
+        async function updateBalances() {
+            if (!provider || !userAddress) {
+                console.log('Provider o userAddress no disponible aún');
+                return;
+            }
+
+            try {
+                // ETH balance
+                const ethBalance = await provider.getBalance(userAddress);
+                const ethFormatted = ethers.utils.formatEther(ethBalance);
+                document.getElementById('ethBalance').textContent = parseFloat(ethFormatted).toFixed(4) + ' ETH';
+
+                // USDC balance
+                const usdcContract = new ethers.Contract(CONTRACTS.usdc, USDC_ABI, provider);
+                const usdcBalance = await usdcContract.balanceOf(userAddress);
+                const usdcFormatted = ethers.utils.formatUnits(usdcBalance, 6);
+                document.getElementById('usdcBalance').textContent = parseFloat(usdcFormatted).toFixed(3) + ' USDC';
+
+                // Check USDC allowance (optional, solo para UI)
+                try {
+                    const allowance = await usdcContract.allowance(userAddress, CONTRACTS.paymentProcessor);
+                    const allowanceFormatted = ethers.utils.formatUnits(allowance, 6);
+                    console.log('Allowance actual:', allowanceFormatted, 'USDC');
+
+                    // Highlight approve section if no allowance
+                    if (allowance.eq(0)) {
+                        const approveSection = document.getElementById('approveSection');
+                        if (approveSection) {
+                            approveSection.style.border = '3px solid #f59e0b';
+                            approveSection.style.animation = 'pulse 2s infinite';
+                        }
+                    }
+                } catch (allowanceError) {
+                    console.log('No se pudo verificar allowance (esto es normal):', allowanceError.message);
+                }
+            } catch (error) {
+                console.error('Error updating balances:', error);
+            }
+        }
+
+        async function approveUSDC() {
+            if (!signer) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            const amount = document.getElementById('approveAmount').value;
+            if (!amount || amount <= 0) {
+                alert('Ingresa una cantidad válida');
+                return;
+            }
+
+            const btn = document.getElementById('approveBtn');
+            btn.disabled = true;
+
+            try {
+                showStatus('approveStatus', '⏳ Aprobando USDC... Confirma la transacción en MetaMask', 'info');
+
+                const usdcContract = new ethers.Contract(CONTRACTS.usdc, USDC_ABI, signer);
+                const amountWei = ethers.utils.parseUnits(amount, 6);
+
+                const tx = await usdcContract.approve(CONTRACTS.paymentProcessor, amountWei);
+
+                showStatus('approveStatus', '⏳ Esperando confirmación...', 'info');
+                await tx.wait();
+
+                showStatus('approveStatus',
+                    `✅ ¡${amount} USDC aprobados!<br>TX: <a class="tx-link" href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash.slice(0, 20)}...</a>`,
+                    'success');
+
+                await updateBalances();
+            } catch (error) {
+                console.error('Error approving USDC:', error);
+                showStatus('approveStatus', '❌ Error: ' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function createPaymentAndQuery(agentKey, city) {
+            if (!signer) {
+                alert('Conecta tu wallet primero');
+                return;
+            }
+
+            const agent = AGENTS[agentKey];
+            const paymentId = 'pay_' + Date.now() + '_' + agentKey;
+
+            try {
+                // 0. Check USDC balance and allowance first
+                showStatus(agentKey + 'Status', '⏳ Verificando balance y aprobación de USDC...', 'info');
+
+                const usdcContract = new ethers.Contract(CONTRACTS.usdc, USDC_ABI, signer);
+                const balance = await usdcContract.balanceOf(userAddress);
+                const allowance = await usdcContract.allowance(userAddress, CONTRACTS.paymentProcessor);
+                const amountWei = ethers.utils.parseUnits(agent.price, 6);
+
+                console.log('Balance USDC:', ethers.utils.formatUnits(balance, 6));
+                console.log('Allowance:', ethers.utils.formatUnits(allowance, 6));
+                console.log('Requerido:', agent.price);
+
+                // Check balance
+                if (balance.lt(amountWei)) {
+                    showStatus(agentKey + 'Status',
+                        `❌ Balance insuficiente!<br><br>` +
+                        `Necesitas: ${agent.price} USDC<br>` +
+                        `Tienes: ${ethers.utils.formatUnits(balance, 6)} USDC<br><br>` +
+                        `Obtén USDC de testnet en: <a href="https://faucet.circle.com/" target="_blank" class="tx-link">faucet.circle.com</a>`,
+                        'error');
+                    return;
+                }
+
+                // Check allowance
+                if (allowance.lt(amountWei)) {
+                    showStatus(agentKey + 'Status',
+                        `⚠️ Necesitas aprobar USDC primero!<br><br>` +
+                        `Aprobación actual: ${ethers.utils.formatUnits(allowance, 6)} USDC<br>` +
+                        `Necesitas aprobar: ${agent.price} USDC<br><br>` +
+                        `👆 Ve a la sección "✅ Aprobar USDC para Pagos" arriba y haz clic en "Aprobar USDC"`,
+                        'error');
+
+                    // Scroll to approve section
+                    document.getElementById('approveAmount').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('approveAmount').style.border = '3px solid #f59e0b';
+                    setTimeout(() => {
+                        document.getElementById('approveAmount').style.border = '';
+                    }, 2000);
+                    return;
+                }
+
+                // 1. Create payment on-chain
+                showStatus(agentKey + 'Status', '⏳ Creando pago on-chain... Confirma en MetaMask', 'info');
+
+                const paymentContract = new ethers.Contract(
+                    CONTRACTS.paymentProcessor,
+                    PAYMENT_PROCESSOR_ABI,
+                    signer
+                );
+
+                // amountWei ya está declarado arriba (línea 859)
+                const serviceId = agentKey + '_' + city.replace(' ', '_');
+
+                const tx = await paymentContract.createPaymentUSDC(
+                    paymentId,
+                    agent.address,
+                    amountWei,
+                    serviceId
+                );
+
+                showStatus(agentKey + 'Status', '⏳ Esperando confirmación del pago...', 'info');
+                await tx.wait();
+
+                showStatus(agentKey + 'Status',
+                    `✅ Pago confirmado!<br>TX: <a class="tx-link" href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank">${tx.hash.slice(0, 20)}...</a><br>⏳ Consultando agente...`,
+                    'success');
+
+                // 2. Query agent
+                const query = `que hacer en ${city}`;
+                let response;
+
+                try {
+                    response = await fetch(agent.endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Payment-Id': paymentId
+                        },
+                        body: JSON.stringify({
+                            query: query,
+                            paymentId: paymentId
+                        })
+                    });
+                } catch (fetchError) {
+                    throw new Error(`Error de conexión con el agente: ${fetchError.message}. Verifica que el servidor esté corriendo.`);
+                }
+
+                // Check HTTP status
+                if (!response.ok) {
+                    let errorMsg = `Error HTTP ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.error || errorMsg;
+                    } catch (e) {
+                        errorMsg = await response.text() || errorMsg;
+                    }
+
+                    if (response.status === 402) {
+                        showStatus(agentKey + 'Status',
+                            `❌ Pago Requerido (HTTP 402)<br><br>` +
+                            `Detalles: ${errorMsg}<br><br>` +
+                            `El pago fue creado on-chain pero el agente no lo aceptó.<br>` +
+                            `Verifica que el Payment ID sea correcto: ${paymentId}`,
+                            'error');
+                    } else {
+                        showStatus(agentKey + 'Status',
+                            `❌ Error ${response.status}: ${errorMsg}`,
+                            'error');
+                    }
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Display the response
+                    const responseText = JSON.stringify(data.result || data, null, 2);
+                    document.getElementById(agentKey + 'Response').textContent = responseText;
+                    document.getElementById(agentKey + 'Response').style.display = 'block';
+
+                    showStatus(agentKey + 'Status',
+                        `✅ ¡Consulta exitosa!<br>Costo: ${agent.price} USDC<br>Payment ID: ${paymentId}`,
+                        'success');
+                } else {
+                    showStatus(agentKey + 'Status', '❌ Error en la consulta: ' + (data.error || 'Error desconocido'), 'error');
+                }
+
+                await updateBalances();
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(agentKey + 'Status', '❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function queryWeatherAgent() {
+            const btn = document.getElementById('weatherBtn');
+            btn.disabled = true;
+
+            const city = document.getElementById('weatherCity').value;
+            await createPaymentAndQuery('weather', city);
+
+            btn.disabled = false;
+        }
+
+        async function queryFashionAgent() {
+            const btn = document.getElementById('fashionBtn');
+            btn.disabled = true;
+
+            const city = document.getElementById('fashionCity').value;
+            await createPaymentAndQuery('fashion', city);
+
+            btn.disabled = false;
+        }
+
+        async function queryActivitiesAgent() {
+            const btn = document.getElementById('activitiesBtn');
+            btn.disabled = true;
+
+            const city = document.getElementById('activitiesCity').value;
+            await createPaymentAndQuery('activities', city);
+
+            btn.disabled = false;
+        }
+
+        function showStatus(elementId, message, type) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+        }
+
+        // Wallet disconnection detection
+        function setupWalletListeners() {
+            if (typeof window.ethereum !== 'undefined') {
+                // Detect account changes
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    console.log('Accounts changed:', accounts);
+                    if (accounts.length === 0) {
+                        // Wallet disconnected
+                        handleWalletDisconnection();
+                    } else {
+                        // Account switched - reconnect
+                        location.reload();
+                    }
+                });
+
+                // Detect chain changes
+                window.ethereum.on('chainChanged', (chainId) => {
+                    console.log('Chain changed to:', chainId);
+                    location.reload();
+                });
+
+                // Detect wallet disconnect
+                window.ethereum.on('disconnect', () => {
+                    console.log('Wallet disconnected');
+                    handleWalletDisconnection();
+                });
+            }
+        }
+
+        function handleWalletDisconnection() {
+            provider = null;
+            signer = null;
+            userAddress = null;
+
+            // Reset UI
+            document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
+            document.getElementById('usdcBalance').textContent = '0';
+            document.getElementById('ethBalance').textContent = '0';
+            document.getElementById('networkBadge').textContent = 'No conectada';
+
+            // Toggle buttons
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('disconnectBtn').style.display = 'none';
+
+            // Show reconnection message
+            showStatus('approveStatus',
+                '⚠️ <strong>Wallet Desconectada</strong><br><br>' +
+                'Tu wallet se ha desconectado. Por favor:<br>' +
+                '1. Conecta tu wallet nuevamente<br>' +
+                '2. O recarga la página para reconectar<br><br>' +
+                '<button onclick="connectWallet()" class="btn" style="margin-top: 10px;">Reconectar Wallet</button>',
+                'warning');
+
+            // Disable all agent buttons
+            const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = true;
+            });
+
+            console.log('✓ Wallet disconnection handled');
+        }
+
+        // Manual disconnect function
+        function disconnectWallet() {
+            console.log('Manual wallet disconnect requested');
+
+            // Clear local state
+            provider = null;
+            signer = null;
+            userAddress = null;
+
+            // Reset UI
+            document.getElementById('walletAddress').textContent = 'No conectada - Haz clic en "Conectar Wallet"';
+            document.getElementById('usdcBalance').textContent = '0';
+            document.getElementById('ethBalance').textContent = '0';
+            document.getElementById('networkBadge').textContent = 'No conectada';
+
+            // Toggle buttons
+            document.getElementById('connectBtn').style.display = 'inline-block';
+            document.getElementById('disconnectBtn').style.display = 'none';
+
+            // Clear all status messages
+            const statusDivs = ['approveStatus', 'weatherStatus', 'fashionStatus', 'activitiesStatus'];
+            statusDivs.forEach(id => {
+                const div = document.getElementById(id);
+                if (div) div.style.display = 'none';
+            });
+
+            // Disable all agent buttons
+            const buttons = ['weatherBtn', 'fashionBtn', 'activitiesBtn'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.disabled = true;
+            });
+
+            // Show disconnection confirmation
+            showStatus('approveStatus',
+                '✅ <strong>Wallet Desconectada Exitosamente</strong><br><br>' +
+                'Has desconectado tu wallet de forma segura.<br>' +
+                'Conecta nuevamente cuando quieras usar los agentes.',
+                'success');
+
+            console.log('✓ Wallet manually disconnected');
+        }
+
+        // Chain switching function
+        async function selectChain(chainKey) {
+            const chainConfig = CHAIN_CONFIGS[chainKey];
+
+            if (!chainConfig) {
+                alert('Configuración de chain no encontrada');
+                return;
+            }
+
+            if (!chainConfig.active) {
+                alert(`⚠️ ${chainConfig.chainName} estará disponible próximamente.\n\nPor ahora solo Sepolia está activa para pruebas.`);
+                return;
+            }
+
+            if (!window.ethereum) {
+                alert('Por favor conecta tu wallet primero');
+                return;
+            }
+
+            try {
+                // Try to switch to the chain
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: chainConfig.chainId }],
+                });
+
+                console.log(`Switched to ${chainConfig.chainName}`);
+                location.reload();
+
+            } catch (switchError) {
+                // Chain not added to wallet, try to add it
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: chainConfig.chainId,
+                                chainName: chainConfig.chainName,
+                                rpcUrls: chainConfig.rpcUrls,
+                                nativeCurrency: chainConfig.nativeCurrency,
+                                blockExplorerUrls: chainConfig.blockExplorerUrls
+                            }],
+                        });
+
+                        console.log(`Added and switched to ${chainConfig.chainName}`);
+                        location.reload();
+
+                    } catch (addError) {
+                        console.error('Error adding chain:', addError);
+                        alert(`Error agregando ${chainConfig.chainName}: ${addError.message}`);
+                    }
+                } else {
+                    console.error('Error switching chain:', switchError);
+                    alert(`Error cambiando a ${chainConfig.chainName}: ${switchError.message}`);
+                }
+            }
+        }
+
+        // Check on load
+        window.addEventListener('load', () => {
+            console.log('=== Sistema cargado ===');
+            console.log('ethers.js:', typeof ethers !== 'undefined' ? 'OK ✓' : 'ERROR ✗');
+            console.log('window.ethereum:', typeof window.ethereum !== 'undefined' ? 'Detectado ✓' : 'No detectado ✗');
+            console.log('Protocolo:', window.location.protocol);
+
+            // Setup wallet event listeners
+            setupWalletListeners();
+
+            // Advertencia sobre file://
+            if (window.location.protocol === 'file:') {
+                alert('⚠️ ADVERTENCIA: Debes usar un servidor HTTP.\n\nEjecuta: python -m http.server 8000\nLuego abre: http://localhost:8000/web3-integration.html');
+            }
+
+            // Verificar ethers.js
+            if (typeof ethers === 'undefined') {
+                alert('❌ Error: ethers.js no se cargó. Recarga la página.');
+                return;
+            }
+
+            // Verificar botón
+            const btn = document.getElementById('connectBtn');
+            if (btn) {
+                console.log('✓ Botón conectar encontrado');
+                console.log('✓ Evento onclick:', btn.onclick ? 'Sí' : 'No');
+                // Agregar listener adicional por si acaso
+                btn.addEventListener('click', connectWallet);
+                console.log('✓ Event listener agregado');
+            } else {
+                console.error('✗ Botón conectar NO encontrado!');
+            }
+
+            console.log('✓ Sistema listo para conectar wallet');
+        });
+    </script>
 </body>
 </html>
