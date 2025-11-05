@@ -47,7 +47,9 @@ module.exports = {
     "celo-alfajores": {
       url: "https://alfajores-forno.celo-testnet.org",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      chainId: 44787
+      chainId: 44787,
+      timeout: 60000,
+      httpHeaders: { 'Content-Type': 'application/json' }
     },
 
     // MAINNETS
