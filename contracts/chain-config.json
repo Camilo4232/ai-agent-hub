@@ -1,0 +1,78 @@
+{
+  "testnets": {
+    "sepolia": {
+      "chainId": 11155111,
+      "name": "Sepolia",
+      "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+      "explorer": "https://sepolia.etherscan.io"
+    },
+    "base-sepolia": {
+      "chainId": 84532,
+      "name": "Base Sepolia",
+      "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+      "explorer": "https://sepolia.basescan.org"
+    },
+    "polygon-amoy": {
+      "chainId": 80002,
+      "name": "Polygon Amoy",
+      "usdc": "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
+      "explorer": "https://amoy.polygonscan.com"
+    },
+    "optimism-sepolia": {
+      "chainId": 11155420,
+      "name": "Optimism Sepolia",
+      "usdc": "0x5fd84259d66Cd46123540766Be93DFE6D43130D7",
+      "explorer": "https://sepolia-optimism.etherscan.io"
+    },
+    "arbitrum-sepolia": {
+      "chainId": 421614,
+      "name": "Arbitrum Sepolia",
+      "usdc": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+      "explorer": "https://sepolia.arbiscan.io"
+    },
+    "celo-alfajores": {
+      "chainId": 44787,
+      "name": "Celo Alfajores",
+      "usdc": "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B",
+      "explorer": "https://alfajores.celoscan.io"
+    }
+  },
+  "mainnets": {
+    "base": {
+      "chainId": 8453,
+      "name": "Base",
+      "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "explorer": "https://basescan.org"
+    },
+    "polygon": {
+      "chainId": 137,
+      "name": "Polygon",
+      "usdc": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      "explorer": "https://polygonscan.com"
+    },
+    "optimism": {
+      "chainId": 10,
+      "name": "Optimism",
+      "usdc": "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+      "explorer": "https://optimistic.etherscan.io"
+    },
+    "arbitrum": {
+      "chainId": 42161,
+      "name": "Arbitrum",
+      "usdc": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+      "explorer": "https://arbiscan.io"
+    },
+    "avalanche": {
+      "chainId": 43114,
+      "name": "Avalanche C-Chain",
+      "usdc": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+      "explorer": "https://snowtrace.io"
+    },
+    "celo": {
+      "chainId": 42220,
+      "name": "Celo",
+      "usdc": "0xcebA9300f2b948710d2653dD7B07f33A8B32118C",
+      "explorer": "https://celoscan.io"
+    }
+  }
+}

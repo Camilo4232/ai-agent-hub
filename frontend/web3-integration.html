@@ -806,12 +806,11 @@
     </div>
 
     <script>
-        // Configuration - Using actual deployed contract addresses from deployment.json
-        const CONTRACTS = {
-            paymentProcessor: '0x97CA3e550b7b6091A652645e89f98946Cda5Ac08',
-            agentRegistry: '0x5a50a736bEea9D7120E3FD915E90d2940B5bF228',
-            usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'
-        };
+        // Multi-chain configuration - loaded dynamically
+        let CHAIN_CONFIG = null;
+        let CONTRACTS = {};
+        let currentChainId = null;
+        let currentNetwork = null;
 
         // Use relative URLs so it works both locally and in production
         const BASE_URL = window.location.origin;
@@ -837,7 +836,68 @@
         let provider = null;
         let signer = null;
         let userAddress = null;
-        let currentChainId = 11155111; // Default: Sepolia
+
+        // Load chain configuration from JSON
+        async function loadChainConfig() {
+            try {
+                const response = await fetch('/chain-config.json');
+                CHAIN_CONFIG = await response.json();
+                console.log('✅ Chain configuration loaded:', CHAIN_CONFIG);
+                return CHAIN_CONFIG;
+            } catch (error) {
+                console.error('❌ Failed to load chain config:', error);
+                // Fallback to Sepolia default
+                CHAIN_CONFIG = {
+                    version: "1.0.0",
+                    networks: {
+                        sepolia: {
+                            chainId: 11155111,
+                            chainName: "Sepolia",
+                            active: true,
+                            explorer: "https://sepolia.etherscan.io",
+                            contracts: {
+                                paymentProcessor: "0x757B2903fbdc642Fd91fC7a6ab0738fF074885A4",
+                                agentRegistry: "0xeA419D677E8fAc797BB02D87a83fbF3D5386c49f",
+                                usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+                            }
+                        }
+                    }
+                };
+                return CHAIN_CONFIG;
+            }
+        }
+
+        // Update contracts based on current chain
+        function updateContractsForChain(chainId) {
+            if (!CHAIN_CONFIG) {
+                console.error('Chain config not loaded!');
+                return false;
+            }
+
+            // Find network by chainId
+            const network = Object.entries(CHAIN_CONFIG.networks).find(
+                ([key, net]) => net.chainId === parseInt(chainId)
+            );
+
+            if (!network) {
+                console.error(`❌ No configuration found for chain ID: ${chainId}`);
+                return false;
+            }
+
+            const [networkKey, networkConfig] = network;
+            currentNetwork = networkKey;
+            currentChainId = chainId;
+
+            // Update CONTRACTS object
+            CONTRACTS = {
+                paymentProcessor: networkConfig.contracts.paymentProcessor,
+                agentRegistry: networkConfig.contracts.agentRegistry,
+                usdc: networkConfig.contracts.usdc
+            };
+
+            console.log(`✅ Contracts updated for ${networkConfig.chainName}:`, CONTRACTS);
+            return true;
+        }
 
         // localStorage keys for wallet state persistence
         const STORAGE_KEYS = {
@@ -1001,6 +1061,11 @@
             }
 
             try {
+                // Load chain configuration first
+                if (!CHAIN_CONFIG) {
+                    await loadChainConfig();
+                }
+
                 // Detectar el nombre de la wallet si está disponible
                 const walletName = window.ethereum.isMetaMask ? 'MetaMask' :
                                  window.ethereum.isCoinbaseWallet ? 'Coinbase Wallet' :
@@ -1024,51 +1089,20 @@
                 const network = await provider.getNetwork();
                 console.log('Red:', network);
 
-                if (network.chainId !== 11155111) {
+                // Update contracts for current chain
+                const contractsUpdated = updateContractsForChain(network.chainId);
+                if (!contractsUpdated) {
                     showStatus('approveStatus',
-                        `⚠️ Red incorrecta detectada (Chain ID: ${network.chainId}).<br>` +
-                        `Por favor cambia a Sepolia testnet en tu wallet.`,
+                        `⚠️ Chain ID ${network.chainId} not supported yet.<br>` +
+                        `Please switch to Sepolia or Base Sepolia testnet.`,
                         'error');
-
-                    // Intentar cambiar a Sepolia automáticamente
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: '0xaa36a7' }], // 11155111 en hex
-                        });
-                        // Si tiene éxito, volver a intentar la conexión
-                        setTimeout(() => connectWallet(), 1000);
-                    } catch (switchError) {
-                        // Si la red no existe, intentar agregarla
-                        if (switchError.code === 4902) {
-                            try {
-                                await window.ethereum.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [{
-                                        chainId: '0xaa36a7',
-                                        chainName: 'Sepolia Testnet',
-                                        nativeCurrency: {
-                                            name: 'Sepolia ETH',
-                                            symbol: 'ETH',
-                                            decimals: 18
-                                        },
-                                        rpcUrls: ['https://rpc.sepolia.org'],
-                                        blockExplorerUrls: ['https://sepolia.etherscan.io']
-                                    }]
-                                });
-                                setTimeout(() => connectWallet(), 1000);
-                            } catch (addError) {
-                                console.error('Error al agregar la red:', addError);
-                                showStatus('approveStatus',
-                                    '❌ No se pudo agregar la red Sepolia. Por favor agrégala manualmente.',
-                                    'error');
-                            }
-                        } else {
-                            console.error('Error al cambiar de red:', switchError);
-                        }
-                    }
                     return;
                 }
+
+                // Network is already validated by updateContractsForChain
+                // Just show a success message with network info
+                const networkInfo = CHAIN_CONFIG.networks[currentNetwork];
+                console.log(`✅ Connected to ${networkInfo.chainName}`)
 
                 document.getElementById('walletAddress').textContent = userAddress;
 
@@ -1591,9 +1625,10 @@
 
                 const network = await provider.getNetwork();
 
-                // Check if on correct network
-                if (network.chainId !== 11155111) {
-                    console.log('Wrong network detected, clearing state');
+                // Update contracts for current chain
+                const contractsUpdated = updateContractsForChain(network.chainId);
+                if (!contractsUpdated) {
+                    console.log('Unsupported network detected, clearing state');
                     clearWalletState();
                     return;
                 }
@@ -1622,11 +1657,15 @@
         }
 
         // Check on load
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             console.log('=== Sistema cargado ===');
             console.log('ethers.js:', typeof ethers !== 'undefined' ? 'OK ✓' : 'ERROR ✗');
             console.log('window.ethereum:', typeof window.ethereum !== 'undefined' ? 'Detectado ✓' : 'No detectado ✗');
             console.log('Protocolo:', window.location.protocol);
+
+            // Load chain configuration first
+            await loadChainConfig();
+            console.log('✓ Chain configuration loaded');
 
             // Setup wallet event listeners
             setupWalletListeners();

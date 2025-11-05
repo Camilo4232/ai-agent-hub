@@ -1,0 +1,13 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "chainName": "Sepolia",
+  "timestamp": "2025-11-05T14:36:40.314Z",
+  "deployer": "0xda77B09a90Dcb4E1b10CDEaeCaEfa343BA491bc0",
+  "explorer": "https://sepolia.etherscan.io",
+  "contracts": {
+    "PaymentProcessor": "0x757B2903fbdc642Fd91fC7a6ab0738fF074885A4",
+    "AgentRegistryV2": "0xeA419D677E8fAc797BB02D87a83fbF3D5386c49f",
+    "USDC": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238"
+  }
+}
